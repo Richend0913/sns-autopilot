@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNSオートパイロット | Instagram・TikTok・Pinterest投稿自動生成ツール</title>
+<meta name="description" content="ブログ記事からInstagram、TikTok、Pinterest向けのSNS投稿コンテンツを自動生成。30日分の一括生成も可能。">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6327505164684489" crossorigin="anonymous"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f0f13;--surface:#1a1a24;--surface2:#222233;--surface3:#2a2a3d;
+  --text:#e8e8f0;--text2:#a0a0b8;--text3:#6a6a82;
+  --accent:#7c5cfc;--accent2:#a78bfa;--accent-glow:rgba(124,92,252,.15);
+  --pink:#f472b6;--orange:#fb923c;--green:#4ade80;--blue:#60a5fa;--red:#f87171;
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+
+/* Header */
+.header{background:linear-gradient(135deg,#1a1028,#0f0f13);border-bottom:1px solid rgba(124,92,252,.15);padding:20px 0;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.header-inner{display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:1.4rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo small{font-size:.7rem;display:block;-webkit-text-fill-color:var(--text3);font-weight:400}
+.nav-tabs{display:flex;gap:4px}
+.nav-tab{padding:8px 20px;border-radius:20px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:.85rem;transition:all .2s}
+.nav-tab:hover{background:var(--surface2);color:var(--text)}
+.nav-tab.active{background:var(--accent);color:#fff}
+
+/* Sections */
+.section{display:none;padding:30px 0}
+.section.active{display:block}
+
+/* Generator Section */
+.gen-controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;align-items:center}
+.select-wrap{position:relative}
+.select-wrap select{appearance:none;background:var(--surface2);border:1px solid rgba(124,92,252,.2);color:var(--text);padding:10px 40px 10px 16px;border-radius:var(--radius-sm);font-size:.9rem;cursor:pointer;min-width:200px}
+.select-wrap::after{content:'▾';position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.btn{padding:10px 24px;border-radius:var(--radius-sm);border:none;font-size:.9rem;cursor:pointer;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#6246ea);color:#fff;box-shadow:0 4px 16px rgba(124,92,252,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(124,92,252,.4)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid rgba(124,92,252,.2)}
+.btn-secondary:hover{background:var(--surface3)}
+.btn-pink{background:linear-gradient(135deg,var(--pink),#e11d48);color:#fff}
+.btn-green{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff}
+.btn-sm{padding:6px 14px;font-size:.8rem}
+
+/* Post Cards */
+.posts-grid{display:grid;gap:20px}
+.post-card{background:var(--surface);border:1px solid rgba(124,92,252,.1);border-radius:var(--radius);overflow:hidden;transition:all .2s}
+.post-card:hover{border-color:rgba(124,92,252,.3);box-shadow:0 4px 24px rgba(0,0,0,.3)}
+.post-card-inner{display:grid;grid-template-columns:320px 1fr;gap:0}
+@media(max-width:768px){.post-card-inner{grid-template-columns:1fr}}
+.post-image-area{background:var(--surface2);min-height:320px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.post-content-area{padding:20px;display:flex;flex-direction:column;gap:12px}
+.post-platform{display:flex;gap:6px;align-items:center}
+.platform-badge{padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:600}
+.badge-ig{background:linear-gradient(135deg,#833AB4,#E1306C,#F77737);color:#fff}
+.badge-tt{background:#000;color:#fff;border:1px solid #333}
+.badge-pin{background:#e60023;color:#fff}
+.post-caption{font-size:.9rem;color:var(--text);line-height:1.8;white-space:pre-wrap;max-height:200px;overflow-y:auto}
+.post-hashtags{font-size:.8rem;color:var(--accent2);line-height:1.8}
+.post-link{font-size:.8rem;color:var(--blue);word-break:break-all}
+.post-actions{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
+.post-tiktok{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;margin-top:8px}
+.post-tiktok-label{font-size:.75rem;color:var(--text3);margin-bottom:4px}
+.post-tiktok-script{font-size:.85rem;color:var(--text2);line-height:1.8}
+
+/* Image Card (screenshot-ready) */
+.sns-card{width:320px;height:320px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px;text-align:center;position:relative;overflow:hidden}
+.sns-card-bg{position:absolute;inset:0;z-index:0}
+.sns-card-content{position:relative;z-index:1}
+.sns-card-emoji{font-size:3rem;margin-bottom:16px}
+.sns-card-title{font-size:1.3rem;font-weight:700;color:#fff;line-height:1.6;margin-bottom:12px;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+.sns-card-subtitle{font-size:.85rem;color:rgba(255,255,255,.8);line-height:1.6}
+.sns-card-brand{position:absolute;bottom:12px;right:16px;font-size:.65rem;color:rgba(255,255,255,.5);z-index:1}
+
+/* Calendar Section */
+.calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.calendar-month{font-size:1.2rem;font-weight:600}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day-header{text-align:center;font-size:.75rem;color:var(--text3);padding:8px}
+.cal-day{background:var(--surface);border:1px solid rgba(124,92,252,.08);border-radius:var(--radius-sm);padding:8px;min-height:100px;cursor:pointer;transition:all .2s}
+.cal-day:hover{border-color:rgba(124,92,252,.3)}
+.cal-day.empty{background:transparent;border-color:transparent}
+.cal-day-num{font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:6px}
+.cal-day-post{font-size:.7rem;color:var(--text3);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.cal-day-platform{margin-top:4px}
+.cal-badge{display:inline-block;width:18px;height:18px;border-radius:50%;font-size:.55rem;line-height:18px;text-align:center;color:#fff;font-weight:700}
+.cal-badge-ig{background:linear-gradient(135deg,#833AB4,#E1306C)}
+.cal-badge-tt{background:#000;border:1px solid #444}
+.cal-badge-pin{background:#e60023}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--green);color:#000;padding:12px 28px;border-radius:var(--radius);font-size:.9rem;font-weight:600;transition:transform .3s ease;z-index:1000}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Stats bar */
+.stats-bar{display:flex;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+.stat-card{background:var(--surface);border:1px solid rgba(124,92,252,.1);border-radius:var(--radius-sm);padding:16px 24px;flex:1;min-width:150px}
+.stat-num{font-size:1.8rem;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:.75rem;color:var(--text3);margin-top:2px}
+
+/* Ad space */
+.ad-space{margin:20px 0;text-align:center;min-height:90px}
+
+/* Responsive */
+@media(max-width:600px){
+  .header-inner{flex-direction:column;gap:12px}
+  .gen-controls{flex-direction:column}
+  .select-wrap select{width:100%}
+  .calendar-grid{grid-template-columns:repeat(7,1fr)}
+  .cal-day{min-height:60px;padding:4px}
+  .cal-day-post{display:none}
+  .stats-bar{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+<div class="container header-inner">
+  <div class="logo">SNSオートパイロット<small>Instagram / TikTok / Pinterest 投稿自動生成</small></div>
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="showSection('generator')">コンテンツ生成</button>
+    <button class="nav-tab" onclick="showSection('bulk')">一括生成</button>
+    <button class="nav-tab" onclick="showSection('calendar')">カレンダー</button>
+  </nav>
+</div>
+</header>
+
+<div class="container">
+
+<!-- Stats -->
+<div class="stats-bar" style="margin-top:24px">
+  <div class="stat-card"><div class="stat-num" id="stat-templates">58</div><div class="stat-label">投稿テンプレート数</div></div>
+  <div class="stat-card"><div class="stat-num">8</div><div class="stat-label">カテゴリ数</div></div>
+  <div class="stat-card"><div class="stat-num">3</div><div class="stat-label">対応プラットフォーム</div></div>
+  <div class="stat-card"><div class="stat-num" id="stat-generated">0</div><div class="stat-label">生成済み投稿</div></div>
+</div>
+
+<!-- Ad -->
+<div class="ad-space">
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6327505164684489" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>try{(adsbygoogle = window.adsbygoogle || []).push({});}catch(e){}</script>
+</div>
+
+<!-- Section: Generator -->
+<div class="section active" id="sec-generator">
+  <div class="gen-controls">
+    <div class="select-wrap">
+      <select id="category-select">
+        <option value="all">全カテゴリ</option>
+        <option value="gift">ギフト情報</option>
+        <option value="calorie">カロリー情報</option>
+        <option value="recipe">料理レシピ</option>
+        <option value="baby">赤ちゃん情報</option>
+        <option value="kotowaza">ことわざ</option>
+        <option value="yumeuranai">夢占い</option>
+        <option value="mensetsu">面接対策</option>
+        <option value="fukugyo">副業</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="generatePost()">コンテンツ生成</button>
+    <button class="btn btn-secondary" onclick="clearPosts()">クリア</button>
+  </div>
+  <div id="posts-output" class="posts-grid"></div>
+</div>
+
+<!-- Section: Bulk -->
+<div class="section" id="sec-bulk">
+  <div class="gen-controls">
+    <div class="select-wrap">
+      <select id="bulk-count">
+        <option value="7">7日分（1週間）</option>
+        <option value="14">14日分（2週間）</option>
+        <option value="30" selected>30日分（1ヶ月）</option>
+      </select>
+    </div>
+    <button class="btn btn-pink" onclick="bulkGenerate()">一括生成</button>
+    <button class="btn btn-secondary" onclick="exportCSV()">CSV出力</button>
+    <button class="btn btn-secondary" onclick="clearBulk()">クリア</button>
+  </div>
+  <div id="bulk-output" class="posts-grid"></div>
+</div>
+
+<!-- Section: Calendar -->
+<div class="section" id="sec-calendar">
+  <div class="calendar-header">
+    <button class="btn btn-sm btn-secondary" onclick="changeMonth(-1)">&lt; 前月</button>
+    <div class="calendar-month" id="cal-month-label"></div>
+    <button class="btn btn-sm btn-secondary" onclick="changeMonth(1)">翌月 &gt;</button>
+  </div>
+  <div class="calendar-grid" id="cal-grid"></div>
+  <div style="margin-top:20px">
+    <button class="btn btn-green" onclick="generateCalendar()">今月のカレンダー生成</button>
+  </div>
+  <div id="cal-detail" style="margin-top:20px"></div>
+</div>
+
+</div><!-- container -->
+
+<!-- Ad bottom -->
+<div class="container">
+<div class="ad-space" style="margin:30px 0">
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6327505164684489" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>try{(adsbygoogle = window.adsbygoogle || []).push({});}catch(e){}</script>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== POST TEMPLATES (58 templates) ====================
+const TEMPLATES = [
+// --- ギフト情報 (gift) ---
+{cat:"gift",emoji:"🎁",title:"母の日に喜ばれるプレゼント5選",caption:"母の日に本当に喜ばれるプレゼントをまとめました！\n\n1. ハンドクリーム＆ハンドケアセット\n2. お花のサブスク\n3. 高級スイーツギフト\n4. リラックスグッズ\n5. 手紙付きカタログギフト\n\nお母さんの笑顔が見たい方は保存してね！",hashtags:"#母の日 #プレゼント #ギフト #母の日プレゼント #母の日ギフト #お母さんありがとう #ギフト選び #プレゼント選び #感謝 #おすすめギフト",tiktok:"「母の日のプレゼント、まだ決まってない人！この5つから選べば間違いなし！1つ目は…」",link:"https://richend0913.github.io/okurite/blog/mothers-day-2026.html",gradient:"linear-gradient(135deg,#f472b6,#c084fc)",brand:"Okurite"},
+{cat:"gift",emoji:"👔",title:"父の日おすすめギフト5選",caption:"父の日に贈りたいプレゼント5選！\n\nお父さんが本当に喜ぶものだけ厳選しました。\n\n1. 上質なハンカチ\n2. クラフトビールセット\n3. マッサージ器\n4. レザー小物\n5. 体験ギフト\n\n迷ったら保存しておいてね！",hashtags:"#父の日 #プレゼント #ギフト #父の日ギフト #お父さん #感謝 #ギフト選び #父の日プレゼント #おすすめ #男性ギフト",tiktok:"「父の日のプレゼント迷ってる人、この動画見て！お父さんが絶対喜ぶ5つを紹介します」",link:"https://richend0913.github.io/okurite/blog/fathers-day-2026.html",gradient:"linear-gradient(135deg,#60a5fa,#6366f1)",brand:"Okurite"},
+{cat:"gift",emoji:"💒",title:"結婚祝いのマナーとおすすめギフト",caption:"結婚祝い、何を贈ればいい？\n\n金額の相場から、贈ってはいけないNGギフトまで解説！\n\n✅ 友人: 5,000〜10,000円\n✅ 同僚: 3,000〜5,000円\n✅ 親族: 10,000〜50,000円\n\n⚠️ 刃物・割れ物はNG！\n\n詳しくはプロフィールのリンクから！",hashtags:"#結婚祝い #ギフト #プレゼント #結婚式 #お祝い #マナー #贈り物 #ウェディング #結婚 #お祝いギフト",tiktok:"「結婚祝いの相場って知ってる？友人なら5千円から1万円。でもこれだけは贈っちゃダメっていうNGギフトがあるんです…」",link:"https://richend0913.github.io/okurite/blog/wedding-gift-guide.html",gradient:"linear-gradient(135deg,#f9a8d4,#fbbf24)",brand:"Okurite"},
+{cat:"gift",emoji:"👶",title:"出産祝いで嬉しかったもの12選",caption:"先輩ママに聞いた！\n「もらって本当に嬉しかった出産祝い」\n\n🏆 1位: おむつケーキ\n🥈 2位: ベビー服（80cm）\n🥉 3位: スタイ・よだれかけセット\n\n意外と嬉しくなかったものも紹介してます…！\n\n詳しくはリンクから👆",hashtags:"#出産祝い #ベビーギフト #プレゼント #妊婦 #マタニティ #新生児 #赤ちゃん #ママ #出産準備 #ギフト選び",tiktok:"「出産祝い何贈ればいいか迷ってる人！先輩ママ100人に聞いた嬉しかったものランキング、第1位は…」",link:"https://richend0913.github.io/okurite/blog/baby-shower-gift.html",gradient:"linear-gradient(135deg,#fcd34d,#f472b6)",brand:"Okurite"},
+{cat:"gift",emoji:"🎂",title:"彼氏への誕生日プレゼント年代別",caption:"彼氏への誕生日プレゼント、年代で全然違う！\n\n【20代】\n→ ペアアクセサリー、財布\n【30代】\n→ 高級ボールペン、革小物\n【40代】\n→ 体験ギフト、お酒\n\n予算別にもっと詳しく紹介してます！",hashtags:"#誕生日プレゼント #彼氏 #プレゼント #ギフト #カップル #記念日 #サプライズ #誕生日 #おすすめ #恋愛",tiktok:"「彼氏の誕生日プレゼント、年齢で選び方変わるの知ってた？20代なら…30代なら…」",link:"https://richend0913.github.io/okurite/blog/gift-for-boyfriend.html",gradient:"linear-gradient(135deg,#818cf8,#f472b6)",brand:"Okurite"},
+{cat:"gift",emoji:"🎄",title:"クリスマスプレゼント2026",caption:"【2026年】クリスマスプレゼント特集！\n\n彼氏・彼女・子供、みんなに贈れるギフトを20個厳選。\n\n予算別に紹介してるから、きっと見つかるはず！\n\n今年のクリスマスは最高の贈り物を。",hashtags:"#クリスマス #クリスマスプレゼント #ギフト #Xmas #プレゼント #サプライズ #クリスマスギフト #冬 #おすすめ #2026",tiktok:"「クリスマスプレゼントまだ決まってない人！予算別に20個紹介するから最後まで見て！」",link:"https://richend0913.github.io/okurite/blog/christmas-gift-2026.html",gradient:"linear-gradient(135deg,#ef4444,#22c55e)",brand:"Okurite"},
+{cat:"gift",emoji:"🏠",title:"新築祝いのおすすめギフト",caption:"新築祝い・引越し祝い、何を贈る？\n\n人気ギフトTOP5：\n1. タオルセット\n2. カタログギフト\n3. 観葉植物\n4. キッチン家電\n5. お菓子の詰め合わせ\n\n⚠️ 赤いもの（火事を連想）はNGです！",hashtags:"#新築祝い #引越し祝い #ギフト #プレゼント #マナー #お祝い #新生活 #インテリア #贈り物 #おすすめ",tiktok:"「新築祝い、絶対に贈っちゃいけないものがあるって知ってた？赤いものはNGなんです。おすすめはこの5つ！」",link:"https://richend0913.github.io/okurite/blog/housewarming-gift.html",gradient:"linear-gradient(135deg,#34d399,#60a5fa)",brand:"Okurite"},
+
+// --- カロリー情報 (calorie) ---
+{cat:"calorie",emoji:"🍚",title:"白米100gのカロリーは168kcal",caption:"白米のカロリー知ってる？\n\n🍚 100g = 168kcal\n🍚 茶碗1杯(150g) = 252kcal\n\n【栄養成分】\n・たんぱく質: 2.5g\n・脂質: 0.3g\n・糖質: 36.8g\n\n玄米に変えると食物繊維3倍に！\nダイエット中の人は保存してね。",hashtags:"#カロリー #ダイエット #白米 #食事管理 #栄養 #糖質制限 #健康 #食事記録 #カロリー計算 #痩せたい",tiktok:"「白米のカロリー、ちゃんと知ってる？100gで168kcal。茶碗1杯だと252kcal。ダイエット中なら玄米がおすすめ！」",link:"https://richend0913.github.io/calorie-book/foods/hakumai.html",gradient:"linear-gradient(135deg,#fbbf24,#f97316)",brand:"カロリーブック"},
+{cat:"calorie",emoji:"🍌",title:"バナナ1本のカロリーと栄養",caption:"バナナって実はダイエットの味方！\n\n🍌 1本(100g) = 86kcal\n\n✅ カリウムたっぷり → むくみ解消\n✅ 食物繊維 → 腸活\n✅ ビタミンB6 → 代謝UP\n\n朝食にバナナ1本、試してみて！",hashtags:"#バナナ #カロリー #ダイエット #朝食 #健康 #フルーツ #栄養 #腸活 #むくみ解消 #食事管理",tiktok:"「ダイエット中にバナナ食べていいの？答えはYES！1本86kcalでカリウムたっぷり。むくみ解消にも最高なんです」",link:"https://richend0913.github.io/calorie-book/foods/banana.html",gradient:"linear-gradient(135deg,#fde047,#facc15)",brand:"カロリーブック"},
+{cat:"calorie",emoji:"🍜",title:"ラーメン1杯のカロリーは？",caption:"ラーメンのカロリー、見てビックリ！\n\n🍜 醤油ラーメン ≒ 470kcal\n🍜 豚骨ラーメン ≒ 500kcal\n🍜 味噌ラーメン ≒ 550kcal\n\nスープを全部飲むと +100kcal！\n\nダイエット中でもラーメン食べたい人は\nスープ残すだけで100kcal減らせるよ！",hashtags:"#ラーメン #カロリー #ダイエット #食事管理 #ラーメン好き #糖質 #栄養 #健康的な食事 #痩せたい #食べて痩せる",tiktok:"「ラーメン好きに朗報！ダイエット中でもラーメン食べていいんです。ただし、スープは残して。それだけで100kcalカット！」",link:"https://richend0913.github.io/calorie-book/foods/ramen.html",gradient:"linear-gradient(135deg,#fb923c,#ef4444)",brand:"カロリーブック"},
+{cat:"calorie",emoji:"🍳",title:"卵1個のカロリーと完全栄養食の理由",caption:"卵は最強の完全栄養食！\n\n🥚 1個(60g) = 91kcal\n\n含まれる栄養：\n✅ たんぱく質 7.4g\n✅ ビタミンA, B2, B12, D\n✅ 鉄分、亜鉛\n\nビタミンC以外ほぼ全部入ってる！\n\n1日2〜3個がおすすめ。",hashtags:"#卵 #たまご #カロリー #完全栄養食 #たんぱく質 #筋トレ #ダイエット #健康 #栄養 #食事管理",tiktok:"「卵が完全栄養食って言われる理由、知ってる？ビタミンC以外のほぼ全ての栄養素が入ってるんです。1個たった91kcal！」",link:"https://richend0913.github.io/calorie-book/foods/tamago.html",gradient:"linear-gradient(135deg,#fcd34d,#fdba74)",brand:"カロリーブック"},
+{cat:"calorie",emoji:"🍗",title:"鶏むね肉がダイエットに最強な理由",caption:"ダイエッターの味方、鶏むね肉！\n\n🍗 100g = 108kcal\n\n✅ たんぱく質 22.3g\n✅ 脂質 1.5g\n✅ コスパ最強（100g 60円〜）\n\nパサパサが苦手な人は\n塩麹に漬けると激ウマに！\n\n筋トレ民は必見！",hashtags:"#鶏むね肉 #ダイエット #筋トレ #たんぱく質 #低脂質 #食事管理 #ボディメイク #痩せる #健康 #自炊",tiktok:"「筋トレ民の主食、鶏むね肉。100gでたんぱく質22g、カロリーたったの108kcal。パサパサ対策は塩麹！」",link:"https://richend0913.github.io/calorie-book/foods/tori_mune.html",gradient:"linear-gradient(135deg,#a78bfa,#f472b6)",brand:"カロリーブック"},
+{cat:"calorie",emoji:"🍺",title:"ビール1缶のカロリー",caption:"ビール好きに知ってほしいカロリー事情\n\n🍺 350ml缶 = 140kcal\n🍺 500ml缶 = 200kcal\n\n毎日500ml飲むと…\n月に6,000kcal = 体脂肪約0.8kg分！\n\n休肝日を作るだけでも\nかなり変わりますよ！",hashtags:"#ビール #カロリー #ダイエット #お酒 #飲み会 #健康 #糖質 #晩酌 #痩せたい #食事管理",tiktok:"「毎日ビール500ml飲んでる人、月に体脂肪0.8kg分のカロリー摂ってるって知ってた？」",link:"https://richend0913.github.io/calorie-book/foods/beer.html",gradient:"linear-gradient(135deg,#fbbf24,#a16207)",brand:"カロリーブック"},
+{cat:"calorie",emoji:"🍦",title:"アイスクリームのカロリー比較",caption:"アイスのカロリー、種類で全然違う！\n\n🍦 アイスクリーム(高脂肪) ≒ 180kcal\n🍦 アイスミルク ≒ 160kcal\n🍦 ラクトアイス ≒ 150kcal\n🍦 氷菓(ガリガリ君等) ≒ 70kcal\n\nダイエット中は氷菓がおすすめ！",hashtags:"#アイスクリーム #カロリー #ダイエット #スイーツ #おやつ #夏 #痩せたい #食事管理 #甘いもの #健康",tiktok:"「ダイエット中でもアイス食べたい人！種類によってカロリー全然違うんです。一番低いのは氷菓で70kcal！」",link:"https://richend0913.github.io/calorie-book/foods/icecream.html",gradient:"linear-gradient(135deg,#c084fc,#60a5fa)",brand:"カロリーブック"},
+
+// --- 料理レシピ (recipe) ---
+{cat:"recipe",emoji:"🍳",title:"簡単！10分で作れるチャーハン",caption:"パラパラチャーハンの作り方！\n\n【材料】\n・冷ご飯 茶碗2杯\n・卵 2個\n・長ねぎ 1/2本\n・ハム 3枚\n\n【コツ】\n✅ 冷ご飯を使う\n✅ 卵は先に半熟に\n✅ 強火で一気に炒める\n\n10分で完成！",hashtags:"#チャーハン #簡単レシピ #料理 #自炊 #時短レシピ #一人暮らし #料理初心者 #パラパラチャーハン #レシピ #おうちごはん",tiktok:"「10分でパラパラチャーハン作れるって知ってた？コツは3つ。冷ご飯を使う、卵は先に半熟、強火で一気に！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/chahan.html",gradient:"linear-gradient(135deg,#f97316,#ef4444)",brand:"料理の基本"},
+{cat:"recipe",emoji:"🍛",title:"失敗しないカレーライスの基本",caption:"カレーの基本レシピ、実は奥が深い！\n\n【隠し味ランキング】\n1. すりおろしりんご\n2. ヨーグルト\n3. インスタントコーヒー\n4. チョコレート\n5. はちみつ\n\n市販のルーでも格段にレベルアップ！",hashtags:"#カレーライス #カレー #簡単レシピ #料理 #隠し味 #自炊 #おうちごはん #料理初心者 #レシピ #時短",tiktok:"「市販のカレールーを劇的に美味しくする隠し味、5つ紹介します。1つ目はすりおろしりんご！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/curry-rice.html",gradient:"linear-gradient(135deg,#f59e0b,#b45309)",brand:"料理の基本"},
+{cat:"recipe",emoji:"🥟",title:"パリパリ餃子の焼き方のコツ",caption:"餃子をパリパリに焼くコツ！\n\n❌ よくある失敗\n→ 水を入れすぎ\n→ フタを取るタイミングが遅い\n\n✅ 正解\n1. 油を引いて餃子を並べる\n2. 熱湯を1/3入れてフタ\n3. 水分が飛んだらフタを外す\n4. ごま油を回しかけて完成！",hashtags:"#餃子 #料理 #簡単レシピ #自炊 #おうちごはん #餃子の焼き方 #料理のコツ #レシピ #時短レシピ #一人暮らし",tiktok:"「餃子がべちゃべちゃになる人、この動画見て！パリパリに焼くコツは水じゃなくて熱湯を使うこと！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/gyoza.html",gradient:"linear-gradient(135deg,#fbbf24,#dc2626)",brand:"料理の基本"},
+{cat:"recipe",emoji:"🍖",title:"ジューシー唐揚げの作り方",caption:"外カリ中ジュワの唐揚げレシピ！\n\n【下味】\n醤油大2、酒大1、にんにく・生姜\n→ 30分漬ける\n\n【衣のコツ】\n片栗粉＋薄力粉 = 半々で混ぜる\n\n【揚げ方】\n170℃で3分 → 一度取り出し\n→ 190℃で1分（二度揚げ！）",hashtags:"#唐揚げ #からあげ #料理 #簡単レシピ #自炊 #おうちごはん #鶏肉 #レシピ #二度揚げ #料理初心者",tiktok:"「唐揚げをお店みたいにカリカリにする方法。二度揚げが全て！170度で3分、取り出して190度で1分！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/karaage.html",gradient:"linear-gradient(135deg,#dc2626,#f97316)",brand:"料理の基本"},
+{cat:"recipe",emoji:"🍚",title:"ふわとろ親子丼の作り方",caption:"お店みたいなふわとろ親子丼！\n\n【秘訣】\n✅ 卵は2回に分けて入れる！\n→ 1回目：固まるまで\n→ 2回目：半熟で火を止める\n\nこれだけでプロの味に。\n\n割り下は醤油:みりん:だし = 1:1:3",hashtags:"#親子丼 #簡単レシピ #料理 #丼 #卵料理 #自炊 #ランチ #おうちごはん #レシピ #料理初心者",tiktok:"「親子丼をふわとろにする方法、たった1つ。卵を2回に分けて入れるだけ！1回目で固めて、2回目は半熟で火を止める！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/oyakodon.html",gradient:"linear-gradient(135deg,#fcd34d,#f97316)",brand:"料理の基本"},
+{cat:"recipe",emoji:"🍝",title:"本格ペペロンチーノの作り方",caption:"ペペロンチーノ、シンプルだけど奥深い！\n\n【材料】たった4つ\nにんにく、唐辛子、オリーブオイル、パスタ\n\n【最大のコツ】\n乳化！！\n→ パスタの茹で汁をフライパンに加えて\n→ 油と水がなじむまでフリフリ\n\nこれができれば一流。",hashtags:"#ペペロンチーノ #パスタ #簡単レシピ #料理 #自炊 #イタリアン #おうちごはん #レシピ #一人暮らし #料理初心者",tiktok:"「ペペロンチーノの失敗する人、全員これやってない。乳化。茹で汁をフライパンに入れて油と混ぜる。これだけで激ウマ！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/peperoncino.html",gradient:"linear-gradient(135deg,#84cc16,#15803d)",brand:"料理の基本"},
+{cat:"recipe",emoji:"🥘",title:"肉じゃがの基本レシピ",caption:"家庭料理の定番・肉じゃが！\n\n【味付けの黄金比】\n醤油:みりん:砂糖:酒 = 3:3:1:3\n\nこの比率さえ覚えれば失敗しない！\n\n【コツ】\n・じゃがいもは大きめに切る\n・落し蓋で煮る\n・火を止めて味を染み込ませる",hashtags:"#肉じゃが #家庭料理 #和食 #簡単レシピ #料理 #自炊 #おうちごはん #レシピ #煮物 #料理初心者",tiktok:"「肉じゃがの味付け、もう迷わない。黄金比は醤油3、みりん3、砂糖1、酒3。この比率だけ覚えて！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/nikujaga.html",gradient:"linear-gradient(135deg,#b45309,#78350f)",brand:"料理の基本"},
+{cat:"recipe",emoji:"🫕",title:"基本の味噌汁の作り方",caption:"味噌汁、ちゃんと作れてる？\n\n❌ やりがちな失敗\n→ 味噌を入れてから沸騰させる\n\n✅ 正解\n1. だしを取る（顆粒でもOK）\n2. 具材を煮る\n3. 火を止めてから味噌を溶く\n4. 再加熱は沸騰させない！\n\n味噌の香りが全然違うよ！",hashtags:"#味噌汁 #和食 #料理 #簡単レシピ #自炊 #だし #おうちごはん #レシピ #健康 #料理初心者",tiktok:"「味噌汁がなんか美味しくない人、味噌入れてから沸騰させてない？火を止めてから味噌を溶くのが正解！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/misoshiru.html",gradient:"linear-gradient(135deg,#92400e,#dc2626)",brand:"料理の基本"},
+
+// --- 赤ちゃん情報 (baby) ---
+{cat:"baby",emoji:"👶",title:"生後3ヶ月の赤ちゃんができること",caption:"生後3ヶ月の赤ちゃんの成長まとめ！\n\n✅ 首がすわり始める\n✅ 声を出して笑う\n✅ 手を見つめる（ハンドリガード）\n✅ おもちゃを握れる\n✅ 体重は出生時の約2倍\n\n3ヶ月健診のポイントも解説！\n\n新米ママは保存してね！",hashtags:"#生後3ヶ月 #赤ちゃん #育児 #新米ママ #ベビー #成長記録 #子育て #ママライフ #赤ちゃんのいる生活 #首すわり",tiktok:"「生後3ヶ月の赤ちゃん、何ができるようになる？首がすわり始めて、声を出して笑うようになるんです！」",link:"https://richend0913.github.io/baby-calendar/months/month-3.html",gradient:"linear-gradient(135deg,#f9a8d4,#c084fc)",brand:"赤ちゃんカレンダー"},
+{cat:"baby",emoji:"🍼",title:"生後6ヶ月・離乳食スタート",caption:"生後6ヶ月は離乳食のスタート時期！\n\n【最初の1週間】\n10倍がゆ 小さじ1から\n\n【2週目〜】\n野菜ペースト追加\n（にんじん、かぼちゃがおすすめ）\n\n【注意点】\n⚠️ はちみつは1歳までNG\n⚠️ 卵は固ゆで卵黄から\n\n焦らずゆっくりで大丈夫！",hashtags:"#離乳食 #生後6ヶ月 #赤ちゃん #育児 #ベビーフード #子育て #新米ママ #離乳食初期 #ママライフ #食育",tiktok:"「離乳食って何から始めればいいの？答えは10倍がゆ。小さじ1から。焦らなくて大丈夫！」",link:"https://richend0913.github.io/baby-calendar/months/month-6.html",gradient:"linear-gradient(135deg,#86efac,#67e8f9)",brand:"赤ちゃんカレンダー"},
+{cat:"baby",emoji:"🎂",title:"1歳の誕生日の過ごし方",caption:"1歳の誕生日、何する？\n\n🎂 スマッシュケーキ\n📸 記念写真撮影\n🎁 知育おもちゃプレゼント\n✋ 手形・足形アート\n📝 一升餅・選び取り\n\n一生に一度のファーストバースデー、\n思い出に残る1日にしよう！",hashtags:"#1歳誕生日 #ファーストバースデー #赤ちゃん #育児 #スマッシュケーキ #一升餅 #選び取り #子育て #記念日 #ベビー",tiktok:"「1歳の誕生日、これやらないと後悔する5つ！スマッシュケーキ、一升餅、選び取り…全部解説します！」",link:"https://richend0913.github.io/baby-calendar/months/month-12.html",gradient:"linear-gradient(135deg,#fbbf24,#f472b6)",brand:"赤ちゃんカレンダー"},
+{cat:"baby",emoji:"🤰",title:"妊娠初期にやるべきこと",caption:"妊娠がわかったらまずやること！\n\n1️⃣ 産婦人科を受診\n2️⃣ 母子手帳をもらう\n3️⃣ 葉酸サプリを飲む\n4️⃣ 職場に報告（タイミング要検討）\n5️⃣ 保険の見直し\n\n【妊娠初期のNG行動】\n❌ 生もの・アルコール\n❌ 激しい運動\n❌ 長時間の立ち仕事",hashtags:"#妊娠初期 #マタニティ #妊婦 #プレママ #妊娠 #出産準備 #葉酸 #母子手帳 #子育て #新米ママ",tiktok:"「妊娠がわかったらまずやること5つ！1つ目、すぐ産婦人科へ。2つ目、母子手帳をもらいに行く…」",link:"https://richend0913.github.io/baby-calendar/months/pregnancy-2.html",gradient:"linear-gradient(135deg,#fda4af,#fcd34d)",brand:"赤ちゃんカレンダー"},
+{cat:"baby",emoji:"😴",title:"赤ちゃんの夜泣き対策",caption:"夜泣きがつらいママ・パパへ\n\n【効果的な対策】\n1. 寝る前のルーティンを作る\n2. 部屋は暗く・静かに\n3. 昼間にたっぷり遊ばせる\n4. 入眠儀式（絵本・子守唄）\n5. 添い寝で安心感を\n\n必ず終わりが来ます。\n一人で抱え込まないで！",hashtags:"#夜泣き #赤ちゃん #育児 #新米ママ #子育て #ねんトレ #赤ちゃんの睡眠 #ママの悩み #育児あるある #パパ育児",tiktok:"「夜泣きで寝れないママ・パパ、この5つ試して。特に効果的なのは寝る前のルーティン。毎日同じ時間に同じことをする！」",link:"https://richend0913.github.io/baby-calendar/months/month-5.html",gradient:"linear-gradient(135deg,#6366f1,#1e1b4b)",brand:"赤ちゃんカレンダー"},
+
+// --- ことわざ (kotowaza) ---
+{cat:"kotowaza",emoji:"📚",title:"「石の上にも三年」の本当の意味",caption:"「石の上にも三年」\n\n【意味】\n冷たい石でも3年座り続ければ温まる\n→ 辛くても辛抱すれば必ず報われる\n\n【由来】\n仏教の修行から来ている説が有力\n\n【使い方】\n「新しい仕事が大変でも、石の上にも三年だよ」\n\n忍耐は必ず実を結ぶ！",hashtags:"#ことわざ #日本語 #雑学 #石の上にも三年 #名言 #教訓 #日本文化 #勉強 #豆知識 #言葉",tiktok:"「石の上にも三年、って本当の意味知ってる？冷たい石でも3年座れば温まる。つまり、辛くても続ければ必ず報われるってこと！」",link:"https://richend0913.github.io/kotowaza/",gradient:"linear-gradient(135deg,#6366f1,#4f46e5)",brand:"ことわざ辞典"},
+{cat:"kotowaza",emoji:"🐒",title:"「猿も木から落ちる」の教訓",caption:"「猿も木から落ちる」\n\n【意味】\nどんな名人でも失敗することがある\n\n【類義語】\n・弘法にも筆の誤り\n・河童の川流れ\n・上手の手から水が漏る\n\n失敗しても落ち込みすぎないで。\n猿だって落ちるんだから！",hashtags:"#ことわざ #日本語 #雑学 #名言 #猿も木から落ちる #教訓 #日本文化 #勉強 #豆知識 #言葉の力",tiktok:"「猿も木から落ちる。どんなプロでも失敗する。似たことわざ知ってる？弘法にも筆の誤り、河童の川流れ…」",link:"https://richend0913.github.io/kotowaza/",gradient:"linear-gradient(135deg,#16a34a,#166534)",brand:"ことわざ辞典"},
+{cat:"kotowaza",emoji:"🌸",title:"「花より団子」の面白い由来",caption:"「花より団子」\n\n【意味】\n風流より実利を取ること\n\n【由来】\n花見の席で、桜を愛でるより\n団子を食べることに夢中な人を揶揄した表現\n\n【英語】\nPudding rather than praise\n（称賛よりプリン）\n\n日本人って昔から食いしん坊なのかも！",hashtags:"#ことわざ #日本語 #雑学 #花より団子 #花見 #桜 #日本文化 #教訓 #豆知識 #言葉",tiktok:"「花より団子って、花見で桜見ないで団子ばっか食べてる人のこと。昔の日本人も食いしん坊だったんだね」",link:"https://richend0913.github.io/kotowaza/",gradient:"linear-gradient(135deg,#f472b6,#fbbf24)",brand:"ことわざ辞典"},
+{cat:"kotowaza",emoji:"⏰",title:"「時は金なり」を実践する方法",caption:"「時は金なり」\n\nベンジャミン・フランクリンの名言が\n日本語のことわざに。\n\n【実践する5つの方法】\n1. スマホのスクリーンタイムを減らす\n2. 朝の1時間を自己投資に\n3. 「NO」と言う勇気を持つ\n4. タスクに優先順位をつける\n5. 完璧主義を手放す\n\n時間は取り戻せない！",hashtags:"#時は金なり #ことわざ #時間管理 #名言 #自己啓発 #朝活 #生産性 #タイムマネジメント #習慣 #成長",tiktok:"「時は金なり、って分かってるけど実践できてる？今日から始められる時間節約法5つ教えます！」",link:"https://richend0913.github.io/kotowaza/",gradient:"linear-gradient(135deg,#fbbf24,#a16207)",brand:"ことわざ辞典"},
+{cat:"kotowaza",emoji:"🎯",title:"「七転び八起き」人生に効くことわざ",caption:"「七転び八起き」\n\n7回転んでも8回立ち上がる。\n\n何度失敗しても諦めずに\n立ち上がる精神を表すことわざ。\n\n【類義語】\n・失敗は成功のもと\n・転んでもただでは起きぬ\n\nあなたの人生、まだまだこれから！",hashtags:"#七転び八起き #ことわざ #名言 #日本語 #前向き #モチベーション #頑張る #雑学 #日本文化 #言葉の力",tiktok:"「七転び八起き。7回失敗しても8回立ち上がる。このことわざ、人生で一番大事かもしれない」",link:"https://richend0913.github.io/kotowaza/",gradient:"linear-gradient(135deg,#ef4444,#f97316)",brand:"ことわざ辞典"},
+{cat:"kotowaza",emoji:"💧",title:"「塵も積もれば山となる」の力",caption:"「塵も積もれば山となる」\n\n小さな努力の積み重ねが\nやがて大きな成果になる。\n\n【具体例】\n✅ 毎日10分の読書 → 年間60時間\n✅ 毎日100円貯金 → 年間36,500円\n✅ 毎日5分の筋トレ → 1年で別人\n\n今日の小さな一歩が未来を変える！",hashtags:"#塵も積もれば山となる #ことわざ #習慣 #継続は力なり #名言 #自己啓発 #毎日コツコツ #成長 #雑学 #日本語",tiktok:"「塵も積もれば山となる。毎日たった10分の読書で年間60時間。毎日100円貯金で年間36,500円。小さいことの積み重ねがすごい」",link:"https://richend0913.github.io/kotowaza/",gradient:"linear-gradient(135deg,#0ea5e9,#6366f1)",brand:"ことわざ辞典"},
+
+// --- 夢占い (yumeuranai) ---
+{cat:"yumeuranai",emoji:"🐍",title:"蛇の夢の意味・夢占い",caption:"蛇の夢を見た？それ、実はラッキーかも！\n\n🐍 白い蛇 → 金運UP！\n🐍 蛇に噛まれる → 恋愛運UP\n🐍 大蛇 → 大きな幸運の前兆\n🐍 蛇に追われる → ストレスの表れ\n🐍 蛇がたくさん → 人間関係に注意\n\n夢は無意識からのメッセージ！",hashtags:"#夢占い #蛇の夢 #スピリチュアル #占い #金運 #開運 #夢診断 #白蛇 #運気アップ #夢",tiktok:"「蛇の夢見た人！白い蛇なら金運爆上がり！噛まれたら恋愛運UP！蛇の夢は基本的に吉夢なんです」",link:"https://richend0913.github.io/yumeuranai/",gradient:"linear-gradient(135deg,#a855f7,#6d28d9)",brand:"夢占い辞典"},
+{cat:"yumeuranai",emoji:"✈️",title:"空を飛ぶ夢の意味",caption:"空を飛ぶ夢、見たことある？\n\n✈️ 気持ちよく飛ぶ → 目標達成の予兆\n✈️ 高く飛ぶ → 向上心の表れ\n✈️ うまく飛べない → 自信を失っている\n✈️ 落ちる → 不安やプレッシャー\n\n飛ぶ夢を見る人は\n向上心が強い証拠！",hashtags:"#夢占い #空を飛ぶ夢 #スピリチュアル #占い #夢診断 #深層心理 #夢 #運気 #開運 #自己分析",tiktok:"「空を飛ぶ夢の意味、知ってる？気持ちよく飛べたら目標達成の予兆！落ちちゃったらストレスのサインかも」",link:"https://richend0913.github.io/yumeuranai/",gradient:"linear-gradient(135deg,#38bdf8,#6366f1)",brand:"夢占い辞典"},
+{cat:"yumeuranai",emoji:"🦷",title:"歯が抜ける夢の深層心理",caption:"歯が抜ける夢、不安になるよね…\n\n🦷 全部抜ける → 人生の転機\n🦷 1本抜ける → 小さな変化\n🦷 奥歯が抜ける → 重要な人との別れ\n🦷 前歯が抜ける → 見た目への不安\n\n【心理学的には】\n自信の喪失やストレスを表すことが多い\n\n深く悩まなくて大丈夫！",hashtags:"#夢占い #歯が抜ける夢 #スピリチュアル #占い #夢診断 #深層心理 #ストレス #夢 #心理学 #不安",tiktok:"「歯が抜ける夢見た人、多いよね。心理学的にはストレスや自信の喪失を表してるんだけど、深く悩まなくて大丈夫！」",link:"https://richend0913.github.io/yumeuranai/",gradient:"linear-gradient(135deg,#d946ef,#7c3aed)",brand:"夢占い辞典"},
+
+// --- 面接対策 (mensetsu) ---
+{cat:"mensetsu",emoji:"💼",title:"面接で「短所は？」と聞かれたら",caption:"面接で「短所は？」の完璧な答え方\n\n【NG回答】\n❌「短所はありません」\n❌「遅刻しがちです」\n\n【テンプレート】\n「私の短所は〇〇です。\nしかし、△△することで改善しています。」\n\n【例】\n「心配性ですが、チェックリストを\n作ることでミスを防いでいます」",hashtags:"#就活 #転職 #面接対策 #面接 #自己分析 #短所 #就職活動 #転職活動 #キャリア #面接練習",tiktok:"「面接で短所を聞かれたら、絶対にこの型で答えて。短所は〇〇です、しかし△△で改善しています。例えば…」",link:"https://richend0913.github.io/mensetsu-guide/",gradient:"linear-gradient(135deg,#1e40af,#3b82f6)",brand:"面接ガイド"},
+{cat:"mensetsu",emoji:"🤝",title:"「志望動機」の作り方3ステップ",caption:"志望動機、こう作れば絶対通る！\n\n【3ステップ】\n\n1️⃣ なぜこの業界？\n→ 自分の経験から語る\n\n2️⃣ なぜこの会社？\n→ 他社との違いを具体的に\n\n3️⃣ 何ができる？\n→ 自分のスキルで貢献できること\n\nこの3つを繋げれば完成！",hashtags:"#志望動機 #就活 #転職 #面接 #面接対策 #ES #エントリーシート #就職活動 #キャリア #自己PR",tiktok:"「志望動機の作り方、3ステップで完成！なぜこの業界、なぜこの会社、自分に何ができるか。この順番で話すだけ！」",link:"https://richend0913.github.io/mensetsu-guide/",gradient:"linear-gradient(135deg,#059669,#10b981)",brand:"面接ガイド"},
+{cat:"mensetsu",emoji:"⭐",title:"「自己PR」で差をつける方法",caption:"自己PRで他の候補者と差をつけよう！\n\n【STAR法】\n\nS(状況): どんな場面で\nT(課題): 何が問題で\nA(行動): 何をして\nR(結果): どうなったか\n\n【例】\n「アルバイト先で売上が低迷(S)\n集客が課題で(T)\nSNS運用を提案・実行し(A)\n売上20%UPに貢献(R)」",hashtags:"#自己PR #就活 #転職 #面接対策 #STAR法 #就職活動 #面接 #エントリーシート #キャリア #転職活動",tiktok:"「自己PRはSTAR法で話すだけで一気にレベルアップ。状況、課題、行動、結果。この順番で具体的に話して！」",link:"https://richend0913.github.io/mensetsu-guide/",gradient:"linear-gradient(135deg,#7c3aed,#a855f7)",brand:"面接ガイド"},
+{cat:"mensetsu",emoji:"❓",title:"「最後に質問は？」のベストアンサー",caption:"面接の最後「何か質問は？」\n\n❌ NG回答\n「特にありません」\n「残業はどのくらい？」\n\n✅ 好印象な質問\n1.「入社までに勉強すべきことは？」\n2.「このポジションで期待される成果は？」\n3.「〇〇様が仕事で大切にしていることは？」\n\n逆質問は最後のアピールチャンス！",hashtags:"#面接 #逆質問 #就活 #転職 #面接対策 #就職活動 #転職活動 #キャリア #面接練習 #内定",tiktok:"「面接の最後、質問ありますか？って聞かれて、ありませんって答えたら落ちます。この3つのどれかを聞いて！」",link:"https://richend0913.github.io/mensetsu-guide/",gradient:"linear-gradient(135deg,#0891b2,#06b6d4)",brand:"面接ガイド"},
+
+// --- 副業 (fukugyo) ---
+{cat:"fukugyo",emoji:"💰",title:"2026年おすすめ副業5選",caption:"2026年、始めるべき副業5選！\n\n1️⃣ ブログ・アフィリエイト\n→ 月1〜50万円\n\n2️⃣ 動画編集\n→ 1本5,000〜30,000円\n\n3️⃣ Webライター\n→ 文字単価1〜5円\n\n4️⃣ プログラミング\n→ 案件単価5〜100万円\n\n5️⃣ SNS運用代行\n→ 月3〜20万円",hashtags:"#副業 #副業おすすめ #稼ぐ #在宅ワーク #フリーランス #ブログ #動画編集 #Webライター #プログラミング #収入アップ",tiktok:"「2026年に始めるべき副業5選！1番のおすすめはブログ。なぜなら寝てる間にも収入が入る仕組みが作れるから！」",link:"https://richend0913.github.io/fukugyo/",gradient:"linear-gradient(135deg,#f59e0b,#16a34a)",brand:"副業ガイド"},
+{cat:"fukugyo",emoji:"📝",title:"ブログで月5万円稼ぐロードマップ",caption:"ブログで月5万円稼ぐまでの道のり\n\n【ステップ】\n1ヶ月目: ブログ開設・10記事\n2ヶ月目: 30記事・SEO学習\n3ヶ月目: ASP登録・収益記事\n4〜6ヶ月目: 50記事・改善\n6〜12ヶ月目: 月5万円達成\n\n大事なのは「継続」だけ。\n9割の人が3ヶ月で辞める。\n続けるだけで上位10%！",hashtags:"#ブログ #アフィリエイト #副業 #稼ぐ #ブログ初心者 #SEO #収益化 #在宅ワーク #フリーランス #ブログ運営",tiktok:"「ブログで月5万円。難しそう？いや、ほとんどの人は3ヶ月で辞めるから、続けるだけで上位10%になれるんです」",link:"https://richend0913.github.io/fukugyo/",gradient:"linear-gradient(135deg,#22c55e,#0d9488)",brand:"副業ガイド"},
+{cat:"fukugyo",emoji:"🎬",title:"動画編集の副業の始め方",caption:"動画編集、未経験でも始められる！\n\n【必要なもの】\n✅ PC（メモリ16GB以上推奨）\n✅ 編集ソフト（Premiere Pro等）\n✅ 学習期間: 1〜2ヶ月\n\n【収入目安】\n・YouTube編集: 5,000〜15,000円/本\n・ショート動画: 3,000〜5,000円/本\n・企業案件: 30,000〜100,000円/本\n\n需要はまだまだ伸びてる！",hashtags:"#動画編集 #副業 #フリーランス #YouTube #動画クリエイター #稼ぐ #在宅ワーク #スキルアップ #クリエイター #収入",tiktok:"「動画編集の副業、今から始めても遅くない！1本5000円から始めて、企業案件取れたら1本10万円もある！」",link:"https://richend0913.github.io/fukugyo/",gradient:"linear-gradient(135deg,#ef4444,#f97316)",brand:"副業ガイド"},
+{cat:"fukugyo",emoji:"🏠",title:"在宅でできる副業10選",caption:"家から一歩も出ずに稼げる副業！\n\n🏠 スキル不要\n1. データ入力\n2. アンケートモニター\n3. フリマアプリ\n\n🏠 スキル必要\n4. Webライター\n5. 動画編集\n6. プログラミング\n7. Webデザイン\n8. 翻訳\n9. オンライン講師\n10. SNS運用代行",hashtags:"#在宅ワーク #副業 #リモートワーク #在宅副業 #主婦副業 #稼ぐ #フリーランス #在宅勤務 #スキルアップ #収入アップ",tiktok:"「在宅で稼げる副業10選。スキルなしでもできるのはデータ入力とアンケートモニター。スキルがあればWebライターで月10万も夢じゃない！」",link:"https://richend0913.github.io/fukugyo/",gradient:"linear-gradient(135deg,#8b5cf6,#ec4899)",brand:"副業ガイド"},
+
+// --- More gift ---
+{cat:"gift",emoji:"💝",title:"予算5,000円のセンスいいギフト",caption:"予算5,000円で見つかるセンスのいいプレゼント！\n\n【女性向け】\n・ハンドクリーム＆ハンドタオルセット\n・おしゃれなマグカップ\n・入浴剤セット\n\n【男性向け】\n・本革キーケース\n・クラフトビール飲み比べ\n・ワイヤレスイヤホン\n\n5,000円でこんなに選べる！",hashtags:"#プレゼント #ギフト #5000円 #予算別 #センスのいい #おすすめ #贈り物 #プレゼント選び #おしゃれ #ギフトアイデア",tiktok:"「予算5000円でセンスいいプレゼント選びたい人、この動画保存して。女性向けと男性向け、それぞれ3つずつ紹介！」",link:"https://richend0913.github.io/okurite/blog/budget-5000-gift.html",gradient:"linear-gradient(135deg,#f472b6,#a855f7)",brand:"Okurite"},
+
+// --- More calorie ---
+{cat:"calorie",emoji:"🥑",title:"アボカド1個のカロリーと脂質",caption:"アボカドは森のバター！\n\n🥑 1個(140g) = 262kcal\n\n脂質が多いけど…\n良質な不飽和脂肪酸！\n\n✅ 美肌効果\n✅ コレステロール低下\n✅ ビタミンE豊富\n\n1日半個が適量です。\n食べすぎ注意！",hashtags:"#アボカド #カロリー #ダイエット #美容 #健康 #栄養 #食事管理 #スーパーフード #食事記録 #美肌",tiktok:"「アボカド好きな人、1個262kcalって知ってた？でも脂質は良質だから美容にいい！ただし1日半個までね！」",link:"https://richend0913.github.io/calorie-book/foods/avocado.html",gradient:"linear-gradient(135deg,#84cc16,#65a30d)",brand:"カロリーブック"},
+{cat:"calorie",emoji:"🧁",title:"おやつ200kcal以内で食べられるもの",caption:"ダイエット中のおやつ、200kcal以内で！\n\n✅ バナナ1本 = 86kcal\n✅ ヨーグルト(100g) = 62kcal\n✅ 枝豆(100g) = 135kcal\n✅ せんべい2枚 = 80kcal\n✅ 高カカオチョコ3粒 = 84kcal\n\n❌ ポテチ1袋 = 340kcal\n❌ ショートケーキ = 340kcal\n\n賢く選ぼう！",hashtags:"#おやつ #ダイエット #カロリー #間食 #ヘルシー #低カロリー #健康 #痩せたい #食事管理 #おすすめ",tiktok:"「ダイエット中でも食べていいおやつ5選！全部200kcal以内。1つ目、バナナ。たったの86kcal！」",link:"https://richend0913.github.io/calorie-book/",gradient:"linear-gradient(135deg,#ec4899,#f43f5e)",brand:"カロリーブック"},
+
+// --- More recipe ---
+{cat:"recipe",emoji:"🍱",title:"基本のおにぎりの握り方",caption:"意外と知らない！正しいおにぎりの握り方\n\n【コツ】\n1. 手を水で濡らし、塩をつける\n2. ご飯は熱いうちに\n3. 力を入れすぎない（3回で形を整える）\n4. 三角形は「山」を意識\n\n握る回数は片面3回ずつ！\n強く握ると硬くなっちゃうよ。",hashtags:"#おにぎり #お弁当 #料理 #簡単レシピ #料理の基本 #自炊 #おうちごはん #レシピ #和食 #料理初心者",tiktok:"「おにぎり、何回握ってる？正解は片面3回ずつ。強く握りすぎると硬くなるから注意！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/onigiri.html",gradient:"linear-gradient(135deg,#f97316,#84cc16)",brand:"料理の基本"},
+{cat:"recipe",emoji:"🥩",title:"失敗しないハンバーグの焼き方",caption:"ハンバーグ、中まで火が通らない問題\n\n【解決策】\n1. 真ん中をへこませる\n2. 強火で両面に焼き色\n3. 水を入れて蓋をして蒸し焼き\n4. 竹串を刺して透明な汁が出たら完成！\n\nこの4ステップで絶対失敗しない。",hashtags:"#ハンバーグ #料理 #簡単レシピ #自炊 #おうちごはん #料理初心者 #肉料理 #レシピ #夕飯 #手作り",tiktok:"「ハンバーグの中が生焼けになる人、真ん中へこませてる？あと水入れて蒸し焼きにするのがポイント！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/hamburg.html",gradient:"linear-gradient(135deg,#991b1b,#dc2626)",brand:"料理の基本"},
+
+// --- More baby ---
+{cat:"baby",emoji:"🦷",title:"赤ちゃんの歯が生える時期",caption:"赤ちゃんの歯、いつ生える？\n\n🦷 6〜8ヶ月: 下の前歯\n🦷 8〜10ヶ月: 上の前歯\n🦷 12〜16ヶ月: 奥歯\n🦷 2歳半頃: 乳歯20本完成\n\n【歯が生え始めたら】\n✅ ガーゼで拭く\n✅ 歯固めを与える\n✅ フッ素入り歯磨きは1歳から\n\n個人差があるので焦らないで！",hashtags:"#赤ちゃんの歯 #歯が生える #育児 #赤ちゃん #新米ママ #子育て #歯磨き #ベビー #成長記録 #乳歯",tiktok:"「赤ちゃんの歯、いつ生えるか知ってる？だいたい6〜8ヶ月で下の前歯から。でも個人差あるから焦らなくてOK！」",link:"https://richend0913.github.io/baby-calendar/months/month-6.html",gradient:"linear-gradient(135deg,#67e8f9,#a78bfa)",brand:"赤ちゃんカレンダー"},
+
+// --- More mensetsu ---
+{cat:"mensetsu",emoji:"👔",title:"面接の服装マナー完全ガイド",caption:"面接の服装、これで完璧！\n\n【男性】\n✅ 黒or紺のスーツ\n✅ 白ワイシャツ\n✅ シンプルなネクタイ\n✅ 黒の革靴\n\n【女性】\n✅ 黒or紺のスーツ\n✅ 白ブラウス\n✅ ストッキング必須\n✅ パンプス3〜5cm\n\n⚠️ 「服装自由」でもスーツが無難！",hashtags:"#面接 #服装 #就活 #転職 #マナー #スーツ #面接対策 #就職活動 #ビジネスマナー #第一印象",tiktok:"「面接の服装自由って言われても、絶対スーツで行って。理由はこの3つ…」",link:"https://richend0913.github.io/mensetsu-guide/",gradient:"linear-gradient(135deg,#334155,#1e293b)",brand:"面接ガイド"},
+
+// --- More fukugyo ---
+{cat:"fukugyo",emoji:"📱",title:"SNS運用代行の始め方",caption:"SNS運用代行、未経験でも始められる！\n\n【やること】\n✅ 投稿作成（画像+キャプション）\n✅ コメント・DM対応\n✅ 分析レポート作成\n\n【報酬相場】\n・個人店: 月3〜5万円\n・中小企業: 月5〜15万円\n・大手: 月20万円〜\n\nまずは無料でポートフォリオを作ろう！",hashtags:"#SNS運用 #副業 #フリーランス #Instagram #マーケティング #稼ぐ #在宅ワーク #SNS #運用代行 #スキルアップ",tiktok:"「SNS運用代行って知ってる？企業のSNSを代わりに投稿するだけで月5万円。未経験でも始められるんです！」",link:"https://richend0913.github.io/fukugyo/",gradient:"linear-gradient(135deg,#e11d48,#f472b6)",brand:"副業ガイド"},
+
+// Extra templates to reach 58
+{cat:"calorie",emoji:"🍙",title:"おにぎり1個のカロリー",caption:"コンビニおにぎりのカロリー比較！\n\n🍙 塩おにぎり = 170kcal\n🍙 鮭おにぎり = 180kcal\n🍙 ツナマヨ = 230kcal\n🍙 明太子 = 175kcal\n🍙 天むす = 220kcal\n\nダイエット中は鮭か明太子がおすすめ！\nツナマヨはマヨネーズ分高め。",hashtags:"#おにぎり #カロリー #コンビニ #ダイエット #食事管理 #ランチ #健康 #糖質 #痩せたい #食事記録",tiktok:"「コンビニおにぎり、カロリー低い順は？鮭170、明太子175…ツナマヨは230もあるんです！」",link:"https://richend0913.github.io/calorie-book/foods/onigiri.html",gradient:"linear-gradient(135deg,#22c55e,#059669)",brand:"カロリーブック"},
+{cat:"recipe",emoji:"🥞",title:"ふわふわホットケーキの作り方",caption:"市販のミックスでもふわふわに！\n\n【秘訣】\n✅ 卵白を泡立ててメレンゲにする\n✅ 牛乳をヨーグルトに変える\n✅ 混ぜすぎない（ダマが少し残るくらい）\n✅ 弱火でじっくり焼く\n\nこの4つで厚さ3cm超えの\nふわふわパンケーキが完成！",hashtags:"#ホットケーキ #パンケーキ #簡単レシピ #料理 #朝食 #おやつ #お菓子作り #ふわふわ #レシピ #自炊",tiktok:"「市販のホットケーキミックスで3cm超えのふわふわパンケーキ作る方法。メレンゲを作るのがポイント！」",link:"https://richend0913.github.io/ryouri-kihon/recipes/hotcake.html",gradient:"linear-gradient(135deg,#fbbf24,#f59e0b)",brand:"料理の基本"},
+{cat:"baby",emoji:"👣",title:"赤ちゃんが歩き始める時期",caption:"赤ちゃんが歩くのはいつ？\n\n👣 つかまり立ち: 8〜10ヶ月\n👣 伝い歩き: 10〜12ヶ月\n👣 ひとり歩き: 12〜18ヶ月\n\n1歳半までに歩けば正常範囲！\n\n【注意】\n歩行器はバランス感覚の発達に\n影響する可能性があるので\n使いすぎに注意。",hashtags:"#赤ちゃん #歩き始め #育児 #1歳 #成長記録 #子育て #新米ママ #つかまり立ち #ベビー #発達",tiktok:"「赤ちゃんが歩かなくて心配してるママ、1歳半までに歩ければ全然正常！焦らなくて大丈夫！」",link:"https://richend0913.github.io/baby-calendar/months/month-12.html",gradient:"linear-gradient(135deg,#f9a8d4,#86efac)",brand:"赤ちゃんカレンダー"},
+{cat:"kotowaza",emoji:"🌊",title:"「急がば回れ」の真の意味",caption:"「急がば回れ」\n\n【意味】\n急いでいるときほど、安全な遠回りをした方が\n結果的に早く着く\n\n【由来】\n琵琶湖を渡る船は速いが危険。\n遠回りでも陸路の方が確実。\n\n仕事でも勉強でも、\n近道より基礎が大事！",hashtags:"#ことわざ #急がば回れ #日本語 #雑学 #名言 #教訓 #基礎 #日本文化 #豆知識 #言葉",tiktok:"「急がば回れの由来って琵琶湖なの知ってた？船は速いけど危ない。陸路は遅いけど確実。基礎って大事だよねって話」",link:"https://richend0913.github.io/kotowaza/",gradient:"linear-gradient(135deg,#0ea5e9,#0284c7)",brand:"ことわざ辞典"},
+{cat:"yumeuranai",emoji:"🌊",title:"海の夢の意味・夢占い",caption:"海の夢を見た？\n\n🌊 穏やかな海 → 心が安定している\n🌊 荒れた海 → 感情が不安定\n🌊 海で泳ぐ → 新しい挑戦の暗示\n🌊 海に沈む → ストレスが溜まっている\n🌊 海辺を歩く → 人生の転機\n\n海は「無意識」の象徴。\nあなたの心の状態を表しています。",hashtags:"#夢占い #海の夢 #スピリチュアル #占い #夢診断 #深層心理 #夢 #運気 #開運 #心理学",tiktok:"「海の夢見た人！穏やかな海なら心が安定してる証拠。荒れてたら要注意、ストレス溜まってるかも」",link:"https://richend0913.github.io/yumeuranai/",gradient:"linear-gradient(135deg,#0891b2,#164e63)",brand:"夢占い辞典"},
+{cat:"mensetsu",emoji:"📧",title:"面接後のお礼メールの書き方",caption:"面接後のお礼メール、送る？送らない？\n\n【結論】送った方がいい！\n\n【テンプレート】\n件名: 本日の面接のお礼（氏名）\n\n〇〇株式会社\n〇〇様\n\n本日はお忙しい中、面接の機会を\nいただきありがとうございました。\n\n〇〇のお話を伺い、\nますます入社への思いが強くなりました。\n\n何卒よろしくお願いいたします。",hashtags:"#面接 #お礼メール #就活 #転職 #マナー #ビジネスメール #面接対策 #就職活動 #内定 #転職活動",tiktok:"「面接後のお礼メール、まだ送ってない人いる？これだけで印象が全然違うから、テンプレ教えるね！」",link:"https://richend0913.github.io/mensetsu-guide/",gradient:"linear-gradient(135deg,#4f46e5,#7c3aed)",brand:"面接ガイド"},
+{cat:"fukugyo",emoji:"💻",title:"プログラミング副業の始め方",caption:"プログラミング副業、何から始める？\n\n【おすすめ言語】\n1. HTML/CSS → Web制作（月5〜20万）\n2. JavaScript → Webアプリ（月10〜50万）\n3. Python → データ分析（月15〜80万）\n\n【学習期間】\n3〜6ヶ月で案件獲得可能\n\nProgateやUdemyで\n独学できる時代！",hashtags:"#プログラミング #副業 #エンジニア #Python #JavaScript #稼ぐ #フリーランス #学習 #スキルアップ #在宅ワーク",tiktok:"「プログラミングで副業したい人、最初に学ぶべきはHTML/CSS。3ヶ月で案件取れるようになるよ！」",link:"https://richend0913.github.io/fukugyo/",gradient:"linear-gradient(135deg,#0ea5e9,#6366f1)",brand:"副業ガイド"},
+];
+
+// ==================== GRADIENT PALETTE ====================
+const GRADIENTS = [
+  "linear-gradient(135deg,#667eea,#764ba2)","linear-gradient(135deg,#f093fb,#f5576c)",
+  "linear-gradient(135deg,#4facfe,#00f2fe)","linear-gradient(135deg,#43e97b,#38f9d7)",
+  "linear-gradient(135deg,#fa709a,#fee140)","linear-gradient(135deg,#a18cd1,#fbc2eb)",
+  "linear-gradient(135deg,#fccb90,#d57eeb)","linear-gradient(135deg,#e0c3fc,#8ec5fc)",
+  "linear-gradient(135deg,#f5576c,#ff6a00)","linear-gradient(135deg,#13547a,#80d0c7)"
+];
+
+let generatedCount = 0;
+let calendarData = {};
+let currentMonth = new Date();
+
+// ==================== FUNCTIONS ====================
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'calendar') renderCalendar();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('コピーしました！'));
+}
+
+function getFilteredTemplates() {
+  const cat = document.getElementById('category-select').value;
+  return cat === 'all' ? TEMPLATES : TEMPLATES.filter(t => t.cat === cat);
+}
+
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function createPostCardHTML(tpl, index) {
+  const fullCaption = tpl.caption + '\n\n' + tpl.hashtags + '\n\n' + tpl.link;
+  const cardId = 'card-' + Date.now() + '-' + index;
+
+  return `
+  <div class="post-card">
+    <div class="post-card-inner">
+      <div class="post-image-area">
+        <div class="sns-card" id="${cardId}" style="width:100%;height:100%;min-height:320px">
+          <div class="sns-card-bg" style="background:${tpl.gradient}"></div>
+          <div class="sns-card-content">
+            <div class="sns-card-emoji">${tpl.emoji}</div>
+            <div class="sns-card-title">${tpl.title}</div>
+            <div class="sns-card-subtitle">${tpl.brand}</div>
+          </div>
+          <div class="sns-card-brand">${tpl.brand}</div>
+        </div>
+      </div>
+      <div class="post-content-area">
+        <div class="post-platform">
+          <span class="platform-badge badge-ig">Instagram</span>
+          <span class="platform-badge badge-tt">TikTok</span>
+          <span class="platform-badge badge-pin">Pinterest</span>
+        </div>
+        <div class="post-caption">${escapeHtml(tpl.caption)}</div>
+        <div class="post-hashtags">${tpl.hashtags}</div>
+        <div class="post-link">${tpl.link}</div>
+        <div class="post-tiktok">
+          <div class="post-tiktok-label">TikTok台本:</div>
+          <div class="post-tiktok-script">${escapeHtml(tpl.tiktok)}</div>
+        </div>
+        <div class="post-actions">
+          <button class="btn btn-sm btn-primary" onclick="copyText(\`${escapeJs(fullCaption)}\`)">キャプションをコピー</button>
+          <button class="btn btn-sm btn-secondary" onclick="copyText(\`${escapeJs(tpl.hashtags)}\`)">ハッシュタグをコピー</button>
+          <button class="btn btn-sm btn-secondary" onclick="copyText(\`${escapeJs(tpl.tiktok)}\`)">TikTok台本をコピー</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function escapeJs(str) {
+  return str.replace(/\\/g,'\\\\').replace(/`/g,'\\`').replace(/\$/g,'\\$');
+}
+
+function generatePost() {
+  const templates = getFilteredTemplates();
+  if (!templates.length) { showToast('テンプレートがありません'); return; }
+  const tpl = pickRandom(templates);
+  const output = document.getElementById('posts-output');
+  output.insertAdjacentHTML('afterbegin', createPostCardHTML(tpl, generatedCount));
+  generatedCount++;
+  document.getElementById('stat-generated').textContent = generatedCount;
+  showToast('投稿を生成しました！');
+}
+
+function clearPosts() {
+  document.getElementById('posts-output').innerHTML = '';
+}
+
+function bulkGenerate() {
+  const count = parseInt(document.getElementById('bulk-count').value);
+  const output = document.getElementById('bulk-output');
+  output.innerHTML = '';
+
+  // Distribute categories evenly
+  const cats = ['gift','calorie','recipe','baby','kotowaza','yumeuranai','mensetsu','fukugyo'];
+  let html = '';
+  const usedIndices = new Set();
+
+  for (let i = 0; i < count; i++) {
+    const cat = cats[i % cats.length];
+    const catTemplates = TEMPLATES.filter(t => t.cat === cat);
+    let tpl;
+    // Try to avoid duplicates
+    let attempts = 0;
+    do {
+      tpl = pickRandom(catTemplates);
+      attempts++;
+    } while (usedIndices.has(TEMPLATES.indexOf(tpl)) && attempts < 10);
+    usedIndices.add(TEMPLATES.indexOf(tpl));
+
+    html += `<div style="position:relative"><div style="position:absolute;top:12px;left:12px;background:var(--accent);color:#fff;padding:2px 10px;border-radius:12px;font-size:.75rem;font-weight:600;z-index:2">Day ${i+1}</div>${createPostCardHTML(tpl, generatedCount + i)}</div>`;
+  }
+  output.innerHTML = html;
+  generatedCount += count;
+  document.getElementById('stat-generated').textContent = generatedCount;
+  showToast(`${count}件の投稿を生成しました！`);
+}
+
+function clearBulk() {
+  document.getElementById('bulk-output').innerHTML = '';
+}
+
+function exportCSV() {
+  const output = document.getElementById('bulk-output');
+  if (!output.children.length) { showToast('先に一括生成してください'); return; }
+
+  let csv = '\uFEFF日付,カテゴリ,タイトル,キャプション,ハッシュタグ,TikTok台本,リンク\n';
+  const cards = output.querySelectorAll('.post-card');
+  const today = new Date();
+
+  cards.forEach((card, i) => {
+    const date = new Date(today);
+    date.setDate(date.getDate() + i);
+    const dateStr = date.toISOString().split('T')[0];
+    const title = card.querySelector('.sns-card-title')?.textContent || '';
+    const caption = card.querySelector('.post-caption')?.textContent || '';
+    const hashtags = card.querySelector('.post-hashtags')?.textContent || '';
+    const tiktok = card.querySelector('.post-tiktok-script')?.textContent || '';
+    const link = card.querySelector('.post-link')?.textContent || '';
+
+    csv += `"${dateStr}","","${csvEscape(title)}","${csvEscape(caption)}","${csvEscape(hashtags)}","${csvEscape(tiktok)}","${link}"\n`;
+  });
+
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'sns-posts-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  showToast('CSVをダウンロードしました');
+}
+
+function csvEscape(str) {
+  return str.replace(/"/g, '""').replace(/\n/g, ' ');
+}
+
+// ==================== CALENDAR ====================
+
+function changeMonth(delta) {
+  currentMonth.setMonth(currentMonth.getMonth() + delta);
+  renderCalendar();
+}
+
+function generateCalendar() {
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cats = ['gift','calorie','recipe','baby','kotowaza','yumeuranai','mensetsu','fukugyo'];
+  const platforms = ['ig','tt','pin'];
+  const key = `${year}-${month}`;
+  calendarData[key] = {};
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cat = cats[(d - 1) % cats.length];
+    const platform = platforms[(d - 1) % platforms.length];
+    const catTemplates = TEMPLATES.filter(t => t.cat === cat);
+    const tpl = catTemplates[(d - 1) % catTemplates.length];
+    calendarData[key][d] = { ...tpl, platform };
+  }
+  renderCalendar();
+  showToast('カレンダーを生成しました！');
+}
+
+function renderCalendar() {
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  const label = `${year}年${month + 1}月`;
+  document.getElementById('cal-month-label').textContent = label;
+
+  const grid = document.getElementById('cal-grid');
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+  const key = `${year}-${month}`;
+  const data = calendarData[key] || {};
+
+  const dayNames = ['日','月','火','水','木','金','土'];
+  let html = dayNames.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+
+  // Empty cells before first day
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div class="cal-day empty"></div>';
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const post = data[d];
+    html += `<div class="cal-day" onclick="showCalDetail(${d})">
+      <div class="cal-day-num">${d}</div>`;
+    if (post) {
+      const platformClass = post.platform === 'ig' ? 'cal-badge-ig' : post.platform === 'tt' ? 'cal-badge-tt' : 'cal-badge-pin';
+      const platformLabel = post.platform === 'ig' ? 'IG' : post.platform === 'tt' ? 'TT' : 'Pi';
+      html += `<div class="cal-day-platform"><span class="cal-badge ${platformClass}">${platformLabel}</span></div>
+        <div class="cal-day-post">${post.emoji} ${post.title}</div>`;
+    }
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function showCalDetail(day) {
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  const key = `${year}-${month}`;
+  const post = calendarData[key]?.[day];
+  const detail = document.getElementById('cal-detail');
+
+  if (!post) {
+    detail.innerHTML = '<p style="color:var(--text3)">この日の投稿はまだ生成されていません。「今月のカレンダー生成」ボタンを押してください。</p>';
+    return;
+  }
+
+  const fullCaption = post.caption + '\n\n' + post.hashtags + '\n\n' + post.link;
+  detail.innerHTML = `
+    <div class="post-card">
+      <div class="post-card-inner">
+        <div class="post-image-area">
+          <div class="sns-card" style="width:100%;height:100%;min-height:320px">
+            <div class="sns-card-bg" style="background:${post.gradient}"></div>
+            <div class="sns-card-content">
+              <div class="sns-card-emoji">${post.emoji}</div>
+              <div class="sns-card-title">${post.title}</div>
+              <div class="sns-card-subtitle">${month+1}月${day}日の投稿</div>
+            </div>
+            <div class="sns-card-brand">${post.brand}</div>
+          </div>
+        </div>
+        <div class="post-content-area">
+          <div class="post-platform">
+            <span class="platform-badge badge-${post.platform === 'ig' ? 'ig' : post.platform === 'tt' ? 'tt' : 'pin'}">${post.platform === 'ig' ? 'Instagram' : post.platform === 'tt' ? 'TikTok' : 'Pinterest'}</span>
+          </div>
+          <div class="post-caption">${escapeHtml(post.caption)}</div>
+          <div class="post-hashtags">${post.hashtags}</div>
+          <div class="post-link">${post.link}</div>
+          <div class="post-tiktok">
+            <div class="post-tiktok-label">TikTok台本:</div>
+            <div class="post-tiktok-script">${escapeHtml(post.tiktok)}</div>
+          </div>
+          <div class="post-actions">
+            <button class="btn btn-sm btn-primary" onclick="copyText(\`${escapeJs(fullCaption)}\`)">キャプションをコピー</button>
+            <button class="btn btn-sm btn-secondary" onclick="copyText(\`${escapeJs(post.hashtags)}\`)">ハッシュタグをコピー</button>
+            <button class="btn btn-sm btn-secondary" onclick="copyText(\`${escapeJs(post.tiktok)}\`)">TikTok台本をコピー</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// Init
+document.getElementById('stat-templates').textContent = TEMPLATES.length;
+renderCalendar();
+</script>
+
+</body>
+</html>
