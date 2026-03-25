@@ -114,6 +114,30 @@ body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--bg);colo
   .cal-day{min-height:60px;padding:4px}
   .cal-day-post{display:none}
   .stats-bar{flex-direction:column}
+  .meigen-slides-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+/* TikTok Meigen Slides */
+.meigen-set{background:var(--surface);border:1px solid rgba(124,92,252,.1);border-radius:var(--radius);padding:24px;margin-bottom:24px}
+.meigen-set-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.meigen-set-title{font-size:1.1rem;font-weight:700;color:var(--accent2)}
+.meigen-slides-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.meigen-slide{aspect-ratio:9/16;background:linear-gradient(135deg,#1a1028,#0f0f13);border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;position:relative;border:1px solid rgba(124,92,252,.15);overflow:hidden;transition:transform .2s}
+.meigen-slide:hover{transform:scale(1.02)}
+.meigen-slide-num{position:absolute;top:8px;right:10px;font-size:.65rem;color:rgba(255,255,255,.5);background:rgba(0,0,0,.4);padding:2px 8px;border-radius:10px}
+.meigen-slide-quote{font-size:.82rem;font-weight:500;color:#fff;line-height:1.7;margin-bottom:10px;font-family:'Yu Mincho','Hiragino Mincho Pro',serif}
+.meigen-slide-person{font-size:.7rem;color:rgba(255,255,255,.6)}
+.meigen-slide-title-text{font-size:1rem;font-weight:700;color:#fff;line-height:1.6;font-family:'Yu Mincho','Hiragino Mincho Pro',serif}
+.meigen-slide-sub{font-size:.7rem;color:rgba(255,255,255,.5);margin-top:8px}
+.meigen-slide-icon{font-size:2rem;margin-bottom:10px}
+.meigen-slide-cta{font-size:.85rem;font-weight:600;color:#fff;line-height:1.6}
+.meigen-slide-account{font-size:.75rem;color:var(--accent2);margin-top:6px}
+.meigen-prompt-block{background:var(--surface2);border:1px solid rgba(124,92,252,.1);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px;position:relative}
+.meigen-prompt-label{font-size:.8rem;font-weight:600;color:var(--accent2);margin-bottom:8px}
+.meigen-prompt-text{font-size:.8rem;color:var(--text2);line-height:1.8;white-space:pre-wrap;max-height:300px;overflow-y:auto;font-family:monospace}
+.meigen-copy-btn{position:absolute;top:10px;right:10px}
+@media(max-width:600px){
+  .meigen-slides-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
@@ -126,6 +150,7 @@ body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--bg);colo
     <button class="nav-tab active" onclick="showSection('generator')">コンテンツ生成</button>
     <button class="nav-tab" onclick="showSection('bulk')">一括生成</button>
     <button class="nav-tab" onclick="showSection('calendar')">カレンダー</button>
+    <button class="nav-tab" onclick="showSection('meigen-slides')">TikTok名言</button>
   </nav>
 </div>
 </header>
@@ -198,6 +223,34 @@ body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--bg);colo
     <button class="btn btn-green" onclick="generateCalendar()">今月のカレンダー生成</button>
   </div>
   <div id="cal-detail" style="margin-top:20px"></div>
+</div>
+
+<!-- Section: TikTok Meigen Slides -->
+<div class="section" id="sec-meigen-slides">
+  <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:8px;background:linear-gradient(135deg,var(--accent),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent">TikTok名言スライド生成</h2>
+  <p style="color:var(--text3);font-size:.85rem;margin-bottom:20px">TikTok名言動画用の12枚スライドセット（表紙＋名言10枚＋エンドカード）を自動生成します。Canva用プロンプト＆投稿文付き。</p>
+  <div class="gen-controls">
+    <div class="select-wrap">
+      <select id="meigen-theme">
+        <option value="人生">人生の名言</option>
+        <option value="努力">努力の名言</option>
+        <option value="恋愛">恋愛の名言</option>
+        <option value="仕事">仕事の名言</option>
+        <option value="夢">夢の名言</option>
+        <option value="友情">友情の名言</option>
+        <option value="勇気">勇気の名言</option>
+        <option value="日本の偉人">日本の偉人の名言</option>
+        <option value="経営者">経営者の名言</option>
+        <option value="スポーツ選手">スポーツ選手の名言</option>
+      </select>
+    </div>
+    <input type="text" id="meigen-account" placeholder="@アカウント名" value="@meigen_daily" style="background:var(--surface2);border:1px solid rgba(124,92,252,.2);color:var(--text);padding:10px 16px;border-radius:var(--radius-sm);font-size:.9rem;width:200px">
+    <button class="btn btn-primary" onclick="generateMeigenSet(1)">スライドセット生成</button>
+    <button class="btn btn-pink" onclick="generateMeigenSet(5)">5セット一括生成</button>
+    <button class="btn btn-green" onclick="generateMeigenSet(10)">10セット一括生成</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('meigen-output').innerHTML=''">クリア</button>
+  </div>
+  <div id="meigen-output"></div>
 </div>
 
 </div><!-- container -->
@@ -607,10 +660,461 @@ function showCalDetail(day) {
     </div>`;
 }
 
+// ==================== TIKTOK MEIGEN SLIDES ====================
+
+const MEIGEN_QUOTES = [
+// --- 人生 ---
+{text:"人生は自転車に乗るようなものだ。倒れないようにするには走り続けなければならない。",person:"アインシュタイン",theme:["人生","勇気"]},
+{text:"人生において最も大切な時とは、今この瞬間である。",person:"相田みつを",theme:["人生"]},
+{text:"人生とは自分を見つけることではない。人生とは自分を創ることである。",person:"バーナード・ショー",theme:["人生","勇気"]},
+{text:"人生は短い。だが、それでも人が暇を持て余すほどには長い。",person:"ルナール",theme:["人生"]},
+{text:"今日が人生最後の日だとしたら、今日やろうとしていることをやりたいか。",person:"スティーブ・ジョブズ",theme:["人生","仕事"]},
+{text:"人生において重要なのは、生きることであって、生きた結果ではない。",person:"ゲーテ",theme:["人生"]},
+{text:"人生で一番大事なことは、自分が何をすれば幸せなのかを知ることだ。",person:"マーク・トウェイン",theme:["人生"]},
+{text:"生きるとは呼吸することではない。行動することだ。",person:"ルソー",theme:["人生","勇気"]},
+{text:"人間の価値は、その人が得たものではなく、その人が与えたもので測られる。",person:"アインシュタイン",theme:["人生"]},
+{text:"明日死ぬかのように生きよ。永遠に生きるかのように学べ。",person:"ガンジー",theme:["人生","努力"]},
+{text:"世界を変えたいなら、まず自分が変わりなさい。",person:"ガンジー",theme:["人生","勇気"]},
+{text:"幸福は香水のようなものである。人に振りかけると、自分にも必ずかかる。",person:"エマーソン",theme:["人生","友情"]},
+{text:"人は自分が幸福であることを知らないから不幸なのである。",person:"ドストエフスキー",theme:["人生"]},
+{text:"人生には二つの悲劇がある。一つは願いが叶わないこと。もう一つは叶うことだ。",person:"オスカー・ワイルド",theme:["人生"]},
+{text:"過去を振り返るな。前を向いて進め。",person:"孔子",theme:["人生","勇気"]},
+{text:"人生最大の栄光は、一度も転ばないことではなく、転ぶたびに起き上がることにある。",person:"ネルソン・マンデラ",theme:["人生","勇気"]},
+{text:"最も重要な決定とは、何をするかではなく、何をしないかを決めることだ。",person:"スティーブ・ジョブズ",theme:["人生","仕事"]},
+{text:"自分の生きる人生を愛せ。自分の愛する人生を生きろ。",person:"ボブ・マーリー",theme:["人生"]},
+{text:"人はいつも、行動するのに最も適した時期を待っているが、その時期など永遠に来ない。",person:"ナポレオン・ヒル",theme:["人生","勇気"]},
+{text:"笑われて、笑われて、強くなる。",person:"太宰治",theme:["人生","勇気","日本の偉人"]},
+{text:"死ぬ気でやれよ。死なないから。",person:"杉村太蔵",theme:["人生","勇気"]},
+{text:"やってみなはれ。やらなわからしまへんで。",person:"鳥井信治郎",theme:["人生","勇気","経営者","日本の偉人"]},
+{text:"為せば成る、為さねば成らぬ何事も、成らぬは人の為さぬなりけり。",person:"上杉鷹山",theme:["人生","努力","日本の偉人"]},
+{text:"自分の感受性くらい、自分で守れ、ばかものよ。",person:"茨木のり子",theme:["人生","日本の偉人"]},
+{text:"人生とは今日一日のことである。",person:"デール・カーネギー",theme:["人生"]},
+{text:"どうせ生きるなら、楽しく生きようぜ。",person:"所ジョージ",theme:["人生","日本の偉人"]},
+{text:"心が変われば態度が変わる。態度が変われば行動が変わる。行動が変われば習慣が変わる。習慣が変われば人格が変わる。人格が変われば運命が変わる。",person:"ヒンズー教の教え",theme:["人生","努力"]},
+{text:"大切なものは目に見えない。",person:"サン＝テグジュペリ",theme:["人生","恋愛"]},
+{text:"この世に生を受けたこと、それ自体が最大のチャンスではないか。",person:"アイルトン・セナ",theme:["人生","スポーツ選手"]},
+{text:"生きていることが大切なんだ。生きていれば、きっと、いいことがある。",person:"手塚治虫",theme:["人生","日本の偉人"]},
+// --- 努力 ---
+{text:"努力した者が全て報われるとは限らん。しかし、成功した者は皆すべからく努力しておる。",person:"はじめの一歩（鴨川会長）",theme:["努力"]},
+{text:"天才とは1%のひらめきと99%の努力である。",person:"トーマス・エジソン",theme:["努力"]},
+{text:"小さいことを積み重ねるのが、とんでもないところへ行くただ一つの道だと思っています。",person:"イチロー",theme:["努力","スポーツ選手","日本の偉人"]},
+{text:"努力は必ず報われる。もし報われない努力があるのならば、それはまだ努力と呼べない。",person:"王貞治",theme:["努力","スポーツ選手","日本の偉人"]},
+{text:"壁というのは、できる人にしかやってこない。超えられる可能性がある人にしかやってこない。",person:"イチロー",theme:["努力","勇気","スポーツ選手","日本の偉人"]},
+{text:"100回叩くと壊れる壁があったとする。でもみんな何回叩けば壊れるかわからないから、99回目で止めてしまう。",person:"松岡修造",theme:["努力","スポーツ選手","日本の偉人"]},
+{text:"諦めたらそこで試合終了ですよ。",person:"安西先生（スラムダンク）",theme:["努力","スポーツ選手"]},
+{text:"私は失敗したことがない。ただ、1万通りの上手くいかない方法を見つけただけだ。",person:"トーマス・エジソン",theme:["努力","勇気"]},
+{text:"継続は力なり。",person:"住岡夜晃",theme:["努力","日本の偉人"]},
+{text:"千里の道も一歩から。",person:"老子",theme:["努力"]},
+{text:"やる気があるときなら誰でもできる。本当の成功者は、やる気がないときでもやる。",person:"フィル・マグロー",theme:["努力"]},
+{text:"練習は嘘をつかない。",person:"大谷翔平",theme:["努力","スポーツ選手","日本の偉人"]},
+{text:"頑張るっていうのは損して得取れということ。",person:"本田宗一郎",theme:["努力","経営者","日本の偉人"]},
+{text:"今日の成果は過去の努力の結果であり、未来はこれからの努力で決まる。",person:"稲盛和夫",theme:["努力","経営者","日本の偉人"]},
+{text:"石の上にも三年という。しかし三年を一年で習得する努力を怠ってはならない。",person:"松下幸之助",theme:["努力","経営者","日本の偉人"]},
+{text:"人よりも一歩先を行くには、人の倍の努力が必要だ。",person:"本田圭佑",theme:["努力","スポーツ選手","日本の偉人"]},
+{text:"才能とは、努力を続けられる能力のことだ。",person:"羽生善治",theme:["努力","日本の偉人"]},
+{text:"一日一日を懸命に生きていれば、未来のことは考えなくてよい。",person:"ナポレオン",theme:["努力","勇気"]},
+{text:"できないと思うからできない。できると思えばできる。",person:"稲盛和夫",theme:["努力","経営者","日本の偉人"]},
+{text:"結果が出ないとき、どういう自分でいられるか。決してあきらめない姿勢が何かを生み出すきっかけをつくる。",person:"イチロー",theme:["努力","スポーツ選手","日本の偉人"]},
+{text:"準備しておこう。チャンスはいつか訪れるものだ。",person:"エイブラハム・リンカーン",theme:["努力"]},
+{text:"成功する秘訣を教えてほしいと言われるが、成功の秘訣は人に教わるものではなく、自分で見つけるものだ。",person:"松下幸之助",theme:["努力","経営者","日本の偉人"]},
+{text:"自分がどれだけ強いか、限界を超えるまでわからない。",person:"マイク・タイソン",theme:["努力","スポーツ選手"]},
+{text:"毎日少しずつ。それがなかなかできねんだなぁ。",person:"相田みつを",theme:["努力","日本の偉人"]},
+{text:"成功した人は努力する。成功しない人は努力しない。ただそれだけの違いだ。",person:"稲盛和夫",theme:["努力","経営者","日本の偉人"]},
+{text:"何かを始めるのに遅すぎるということはない。",person:"レス・ブラウン",theme:["努力","勇気"]},
+{text:"限界を決めるのは心だ。心が何かをやれると思い描き信じることができれば、それは必ず実現できる。",person:"モハメド・アリ",theme:["努力","勇気","スポーツ選手"]},
+{text:"負けると思えば負ける。勝つと思えば勝つ。逆になろうと、人には勝つと言い聞かすべし。",person:"豊臣秀吉",theme:["努力","日本の偉人"]},
+{text:"やれるかどうかではない。やるかやらないかだ。",person:"ヨーダ（スター・ウォーズ）",theme:["努力","勇気"]},
+{text:"一生懸命だと知恵が出る。中途半端だと愚痴が出る。いい加減だと言い訳が出る。",person:"武田信玄",theme:["努力","日本の偉人"]},
+// --- 恋愛 ---
+{text:"愛するとは、自分の幸せを相手の幸せに重ねることである。",person:"ライプニッツ",theme:["恋愛"]},
+{text:"愛とは相手に変わることを要求せず、相手をありのままに受け入れることだ。",person:"ディエゴ・ファブリ",theme:["恋愛"]},
+{text:"愛はお互いを見つめ合うことではなく、共に同じ方向を見つめることである。",person:"サン＝テグジュペリ",theme:["恋愛","人生"]},
+{text:"好きだから会いたいんじゃない。会いたいから好きなんだ。",person:"村上春樹",theme:["恋愛","日本の偉人"]},
+{text:"恋愛は戦争のようなものだ。始めるのは簡単だが、やめるのが難しい。",person:"H・L・メンケン",theme:["恋愛"]},
+{text:"愛されることより愛することを。理解されることより理解することを。",person:"アッシジのフランチェスコ",theme:["恋愛"]},
+{text:"人は人を愛しているとき、最も無防備になる。",person:"フロイト",theme:["恋愛"]},
+{text:"本当の愛は、もう何も見返りを期待しないところに生まれる。",person:"サン＝テグジュペリ",theme:["恋愛"]},
+{text:"愛する人の欠点を愛せないのなら、愛しているとは言えない。",person:"ゲーテ",theme:["恋愛"]},
+{text:"あなたがいるだけで、私は幸せです。",person:"宮沢賢治",theme:["恋愛","日本の偉人"]},
+{text:"恋の悩みほど甘いものはない。",person:"キケロ",theme:["恋愛"]},
+{text:"愛は行動で示すもの。言葉だけでは足りない。",person:"ヘレン・ケラー",theme:["恋愛"]},
+{text:"誰かを深く愛せることは強さであり、誰かに深く愛されることは勇気である。",person:"老子",theme:["恋愛","勇気"]},
+{text:"嫉妬とは、愛のない所に愛を要求することだ。",person:"カフカ",theme:["恋愛"]},
+{text:"一緒にいて楽しい人より、離れていて寂しい人を選べ。",person:"太宰治",theme:["恋愛","日本の偉人"]},
+{text:"出会えてよかった。あなたに会えなかったら、こんなに笑えなかった。",person:"作者不詳",theme:["恋愛"]},
+{text:"思い出に変わるまで一緒にいよう。",person:"尾崎豊",theme:["恋愛","日本の偉人"]},
+{text:"本当に大切な人は、失ってから気づく。",person:"作者不詳",theme:["恋愛","人生"]},
+{text:"一番大切なことは、目に見えない。",person:"サン＝テグジュペリ",theme:["恋愛","人生"]},
+{text:"人を愛するということは、その人に幸せになってもらいたいと思うことだ。",person:"トマス・アクィナス",theme:["恋愛"]},
+{text:"恋は決闘です。もし右を見たり左を見たりしていたら敗北です。",person:"ロマン・ロラン",theme:["恋愛"]},
+{text:"今までで一番泣いた恋が、今までで一番大切な恋だった。",person:"作者不詳",theme:["恋愛"]},
+{text:"あなたが私を必要とするから愛するのではなく、愛しているからあなたを必要とするのです。",person:"エーリッヒ・フロム",theme:["恋愛"]},
+{text:"恋とは自分本位なもの、愛とは相手本位なもの。",person:"美輪明宏",theme:["恋愛","日本の偉人"]},
+{text:"この世の中で一番強い人間は、孤独の中でただ一人立つ人間だ。",person:"イプセン",theme:["恋愛","勇気"]},
+{text:"別れの辛さに馴れることは決してありません。いくたびの経験を重ねても、別れは辛く苦しいものです。",person:"瀬戸内寂聴",theme:["恋愛","日本の偉人"]},
+{text:"恋は雨のように降ってくる。",person:"トルストイ",theme:["恋愛"]},
+{text:"好きな人の前では、弱い自分でもいい。",person:"作者不詳",theme:["恋愛"]},
+{text:"人は誰でも愛する権利がある。愛される価値がないと思っている人こそ、最も愛を必要としている。",person:"ヴィクトル・ユゴー",theme:["恋愛"]},
+{text:"世界でたったひとりのあなたへ。あなたの存在だけで救われている人がいる。",person:"作者不詳",theme:["恋愛","人生"]},
+// --- 仕事 ---
+{text:"仕事は人生の半分を占める。仕事で満足できなければ、人生に満足できない。",person:"スティーブ・ジョブズ",theme:["仕事","人生"]},
+{text:"好きなことを仕事にするのではなく、仕事を好きになれ。",person:"稲盛和夫",theme:["仕事","経営者","日本の偉人"]},
+{text:"最高の仕事をする唯一の方法は、自分のやっていることを愛することだ。",person:"スティーブ・ジョブズ",theme:["仕事"]},
+{text:"人間は働きすぎてダメになるより、休みすぎてサビつく方がずっと多い。",person:"カーネル・サンダース",theme:["仕事","経営者"]},
+{text:"チャンスは常に困難の中にある。",person:"アインシュタイン",theme:["仕事","勇気"]},
+{text:"変化を恐れるな。変化しないことを恐れろ。",person:"ジャック・ウェルチ",theme:["仕事","経営者"]},
+{text:"成功者は失敗から学び、別な方法でやり直す。",person:"デール・カーネギー",theme:["仕事"]},
+{text:"問題を見つけたら、すぐに解決策を考えろ。問題で頭をいっぱいにするな。",person:"孫正義",theme:["仕事","経営者","日本の偉人"]},
+{text:"イノベーションとは、リーダーとフォロワーの違いだ。",person:"スティーブ・ジョブズ",theme:["仕事","経営者"]},
+{text:"お客様の期待を超えろ。そうすればお客様は何度でも戻ってくる。",person:"ジェフ・ベゾス",theme:["仕事","経営者"]},
+{text:"一番いけないのは、自分なんかダメだと思い込むことだよ。",person:"ドラえもん",theme:["仕事","勇気"]},
+{text:"速度を上げるばかりが人生ではない。",person:"ガンジー",theme:["仕事","人生"]},
+{text:"リーダーとは、希望を配る人のことだ。",person:"ナポレオン",theme:["仕事"]},
+{text:"始めることさえ忘れなければ、人はいつまでも若くある。",person:"マーティン・ルーサー・キング",theme:["仕事","人生"]},
+{text:"決断のスピードが、ビジネスのスピードを決める。",person:"孫正義",theme:["仕事","経営者","日本の偉人"]},
+{text:"完璧を目指すよりまず終わらせろ。",person:"マーク・ザッカーバーグ",theme:["仕事","経営者"]},
+{text:"考えすぎて動けなくなるな。動きながら考えろ。",person:"柳井正",theme:["仕事","経営者","日本の偉人"]},
+{text:"自分がコントロールできることに集中しろ。",person:"松井秀喜",theme:["仕事","スポーツ選手","日本の偉人"]},
+{text:"プロフェッショナルとは、どんな状況でも結果を出す人のことだ。",person:"野村克也",theme:["仕事","スポーツ選手","日本の偉人"]},
+{text:"何事も最初に行動を起こすのは少数の人だ。だが、その少数が世界を変える。",person:"ピーター・ドラッカー",theme:["仕事","経営者"]},
+{text:"すべての偉業は、最初は不可能だと言われた。",person:"トーマス・カーライル",theme:["仕事","勇気"]},
+{text:"部下の失敗は上司の責任。部下の成功は部下の手柄。",person:"松下幸之助",theme:["仕事","経営者","日本の偉人"]},
+{text:"仕事をする上で大切なのは、二つある。いいものを作ること。そして、期日を守ること。",person:"宮崎駿",theme:["仕事","日本の偉人"]},
+{text:"志を持って始めたら、才能の差は小さい。続けたかどうかの差が大きい。",person:"羽生善治",theme:["仕事","努力","日本の偉人"]},
+{text:"会議で何も決まらないのは、会議が悪いのではなく、決める人がいないからだ。",person:"カルロス・ゴーン",theme:["仕事","経営者"]},
+{text:"まだまだ自分は変われる。そう思える人間は強い。",person:"大谷翔平",theme:["仕事","努力","スポーツ選手","日本の偉人"]},
+{text:"最初にあったのは夢と、そして根拠のない自信だけ。そこからすべてが始まった。",person:"孫正義",theme:["仕事","夢","経営者","日本の偉人"]},
+{text:"困難な仕事を避けてはいけない。困難な仕事に取り組むから成長するのだ。",person:"稲盛和夫",theme:["仕事","努力","経営者","日本の偉人"]},
+{text:"仕事の報酬は仕事である。",person:"藤田田",theme:["仕事","経営者","日本の偉人"]},
+{text:"顧客は解決策を買うのではない。自分の問題の解決を買うのだ。",person:"ピーター・ドラッカー",theme:["仕事","経営者"]},
+// --- 夢 ---
+{text:"夢を見ることができるなら、それは実現できる。",person:"ウォルト・ディズニー",theme:["夢","勇気"]},
+{text:"すべての夢は叶う。追いかける勇気があるなら。",person:"ウォルト・ディズニー",theme:["夢","勇気"]},
+{text:"夢なき者に成功なし。",person:"吉田松陰",theme:["夢","日本の偉人"]},
+{text:"夢は逃げない。逃げるのはいつも自分だ。",person:"高橋歩",theme:["夢","日本の偉人"]},
+{text:"未来は今日始まる。明日始まるのではない。",person:"ヨハネ・パウロ二世",theme:["夢"]},
+{text:"想像力がすべてだ。それは人生で引き寄せるものの予告編なのだから。",person:"アインシュタイン",theme:["夢"]},
+{text:"あなたの時間は限られている。他人の人生を生きて無駄にするな。",person:"スティーブ・ジョブズ",theme:["夢","人生"]},
+{text:"世界一になりなさい。さもなければ世界一に学びなさい。",person:"ジャック・ウェルチ",theme:["夢","経営者"]},
+{text:"夢を語れば笑われるのは当然。笑われるくらい大きな夢を持て。",person:"孫正義",theme:["夢","経営者","日本の偉人"]},
+{text:"不可能とは自らの力で世界を切り開くことを放棄した臆病者の言葉だ。",person:"モハメド・アリ",theme:["夢","勇気","スポーツ選手"]},
+{text:"夢は叶うものじゃない。叶えるものだ。",person:"作者不詳",theme:["夢","努力"]},
+{text:"人の夢を笑うな。",person:"NANA（矢沢あい）",theme:["夢"]},
+{text:"夢を持つことに年齢制限はない。",person:"C・S・ルイス",theme:["夢"]},
+{text:"10年後にはきっと、せめて10年でいいからもどってやり直したいと思っているのだろう。今やり直せよ、未来を。",person:"作者不詳",theme:["夢","人生"]},
+{text:"大きな目標を達成するには、小さな一歩を大切にしなければならない。",person:"松下幸之助",theme:["夢","努力","経営者","日本の偉人"]},
+{text:"運命を変えるのは性格だ。性格を変えるのは行動だ。",person:"ウィリアム・ジェームズ",theme:["夢","人生"]},
+{text:"何もしないことが一番のリスクだ。",person:"マーク・ザッカーバーグ",theme:["夢","仕事","経営者"]},
+{text:"想像できることは、すべて現実になりうる。",person:"パブロ・ピカソ",theme:["夢"]},
+{text:"自分を信じろ。自分ならできると。",person:"ビヨンセ",theme:["夢","勇気"]},
+{text:"夢の大きさが人生の大きさを決める。",person:"作者不詳",theme:["夢"]},
+{text:"目標を持たない人に成功はない。行き先のない船はどこにもたどり着けない。",person:"ブライアン・トレーシー",theme:["夢"]},
+{text:"大きなことを成し遂げるには、まず大きなことを夢見なければならない。",person:"マハトマ・ガンジー",theme:["夢"]},
+{text:"志を立てるのに遅すぎるということはない。",person:"ボールドウィン",theme:["夢","勇気"]},
+{text:"夢を追い続ける勇気さえあれば、すべての夢は必ず実現できる。",person:"ウォルト・ディズニー",theme:["夢","勇気"]},
+{text:"理想を持ち、信念に生きよ。理想や信念を見失った者は、戦う前に負けているのだ。",person:"織田信長",theme:["夢","日本の偉人"]},
+{text:"成功の反対は失敗ではなく、何もしないことだ。",person:"ウェイン・グレツキー",theme:["夢","スポーツ選手"]},
+{text:"無理だという人の意見は聞かなくていい。やらない理由を探すのが上手な人だから。",person:"堀江貴文",theme:["夢","経営者","日本の偉人"]},
+{text:"成功者は夢を見る。その夢に命をかける。",person:"ナポレオン・ヒル",theme:["夢","努力"]},
+{text:"誰も信じてくれなくても、自分だけは自分を信じろ。",person:"長友佑都",theme:["夢","スポーツ選手","日本の偉人"]},
+{text:"可能性の扉は自分でしか開けられない。",person:"作者不詳",theme:["夢","勇気"]},
+// --- 友情 ---
+{text:"友人とは、あなたについてすべてを知っていて、それでもあなたを愛してくれる人だ。",person:"エルバート・ハバード",theme:["友情"]},
+{text:"友情は喜びを二倍にし、悲しみを半分にする。",person:"シラー",theme:["友情"]},
+{text:"本当の友達とは、あなたが困ったときに去らない人のことだ。",person:"ウォルター・ウィンチェル",theme:["友情"]},
+{text:"友達がいない人生は、太陽のない庭のようなものだ。",person:"作者不詳",theme:["友情"]},
+{text:"一人の敵もつくらない人は、一人の友達もつくれない。",person:"テニソン",theme:["友情"]},
+{text:"友情は永遠のものだ。恋愛はそうではない。",person:"アントワーヌ・ド・リヴァロル",theme:["友情","恋愛"]},
+{text:"困った時の友が真の友。",person:"イソップ",theme:["友情"]},
+{text:"友達とは、あなたの過去を理解し、あなたの未来を信じ、あなたの今をそのまま受け入れてくれる人だ。",person:"作者不詳",theme:["友情"]},
+{text:"誠実な友が一人いれば、千人の敵が来ても恐れることはない。",person:"アラビアの格言",theme:["友情"]},
+{text:"良い友人を持つ最善の方法は、良い友人になることだ。",person:"エマーソン",theme:["友情"]},
+{text:"友人の数は重要ではない。大切なのは質だ。",person:"セネカ",theme:["友情"]},
+{text:"一緒に泣いてくれる友がいれば、人生はそれほど悪くない。",person:"マーク・トウェイン",theme:["友情","人生"]},
+{text:"仲間がいるから頑張れる。一人じゃ乗り越えられない壁がある。",person:"作者不詳",theme:["友情","努力"]},
+{text:"人間の強さとは、一人で立つことではない。誰かに頼れることだ。",person:"作者不詳",theme:["友情"]},
+{text:"人生という名の旅で最も美しい景色は、共に歩む仲間の笑顔だ。",person:"作者不詳",theme:["友情","人生"]},
+{text:"腹を割って話せる友は、一生の財産だ。",person:"作者不詳",theme:["友情"]},
+{text:"言葉にしなくても伝わる。それが本当の友情だ。",person:"作者不詳",theme:["友情"]},
+{text:"距離は友情を壊さない。沈黙もまた友情を壊さない。",person:"作者不詳",theme:["友情"]},
+{text:"友の涙を乾かしてやるのは、友の義務だ。",person:"シェイクスピア",theme:["友情"]},
+{text:"幸せを分かち合える友がいることが、人生最大の幸運だ。",person:"作者不詳",theme:["友情","人生"]},
+{text:"いつでも会える友がいるだけで、人は強くなれる。",person:"作者不詳",theme:["友情"]},
+{text:"ありがとうと言えることが、友情の始まりだ。",person:"作者不詳",theme:["友情"]},
+{text:"笑い合える友がいれば、泣くことを忘れられる。",person:"作者不詳",theme:["友情"]},
+{text:"あの日の約束を覚えているか。あれが今も俺たちを繋いでいる。",person:"作者不詳",theme:["友情"]},
+{text:"最高の友は、最高の自分を引き出してくれる。",person:"ヘンリー・フォード",theme:["友情","経営者"]},
+{text:"何年ぶりに会っても昨日会ったみたいに話せる。それが本当の友達。",person:"作者不詳",theme:["友情"]},
+{text:"友は近くにいる必要はない。心にいればいい。",person:"作者不詳",theme:["友情"]},
+{text:"人を信じる力が、友情を育てる。",person:"作者不詳",theme:["友情"]},
+{text:"親友とは、沈黙が気まずくない人のこと。",person:"作者不詳",theme:["友情"]},
+{text:"出会いに感謝。あなたがいるから今の自分がいる。",person:"作者不詳",theme:["友情","人生"]},
+// --- 勇気 ---
+{text:"勇気とは、恐れを知らないことではない。恐れを乗り越えることだ。",person:"ネルソン・マンデラ",theme:["勇気"]},
+{text:"失敗を恐れるな。失敗しないことを恐れろ。",person:"本田宗一郎",theme:["勇気","経営者","日本の偉人"]},
+{text:"ハングリーであれ、愚かであれ。",person:"スティーブ・ジョブズ",theme:["勇気","仕事"]},
+{text:"あなたにとって最も危険なリスクは、リスクを取らないことだ。",person:"マーク・ザッカーバーグ",theme:["勇気","経営者"]},
+{text:"安全な道を選ぶな。正しいと思う道を選べ。",person:"セオドア・ルーズベルト",theme:["勇気"]},
+{text:"嵐の後には虹が出る。",person:"作者不詳",theme:["勇気","人生"]},
+{text:"今の自分にできないことは、明日の自分にもできない。今日やれ。",person:"作者不詳",theme:["勇気","努力"]},
+{text:"後悔するのは、やったことよりやらなかったことの方が多い。",person:"マーク・トウェイン",theme:["勇気"]},
+{text:"暗闇を恐れるな。暗闇の向こうに光がある。",person:"ヘレン・ケラー",theme:["勇気"]},
+{text:"逃げた先に楽園はない。",person:"映画「千と千尋の神隠し」",theme:["勇気","日本の偉人"]},
+{text:"傷つくことを恐れるのは、実際に傷つくよりもつらいことだと、おまえの心に言ってやるがよい。",person:"パウロ・コエーリョ",theme:["勇気"]},
+{text:"船は港にいるとき最も安全だが、それは船が作られた目的ではない。",person:"パウロ・コエーリョ",theme:["勇気","人生"]},
+{text:"涙の数だけ強くなれるよ。アスファルトに咲く花のように。",person:"岡本真夜",theme:["勇気","日本の偉人"]},
+{text:"人間は負けたら終わりなのではない。辞めたら終わりなのだ。",person:"リチャード・ニクソン",theme:["勇気"]},
+{text:"どんな冬もいつかは終わり、春は必ずやってくる。",person:"ハル・ボーランド",theme:["勇気"]},
+{text:"泣きたいときは泣けばいい。でも、泣き終わったら前を向け。",person:"作者不詳",theme:["勇気"]},
+{text:"痛みは一瞬、諦めは一生。",person:"ランス・アームストロング",theme:["勇気","スポーツ選手"]},
+{text:"弱さを知ることが、本当の強さの始まりだ。",person:"作者不詳",theme:["勇気"]},
+{text:"打たれても打たれても前に出る。それが勇気だ。",person:"作者不詳",theme:["勇気","スポーツ選手"]},
+{text:"怖いのは当然。それでも踏み出すのが勇気だ。",person:"作者不詳",theme:["勇気"]},
+{text:"周りの目なんか気にするな。お前の人生はお前のものだ。",person:"矢沢永吉",theme:["勇気","日本の偉人"]},
+{text:"立ち止まって考えることも大事だが、立ち止まりすぎると動けなくなる。",person:"作者不詳",theme:["勇気"]},
+{text:"嫌われる勇気を持て。全員に好かれる必要はない。",person:"アルフレッド・アドラー",theme:["勇気"]},
+{text:"正解のない道を歩くことを恐れるな。正解は自分で作れ。",person:"作者不詳",theme:["勇気"]},
+{text:"いつかやろうは馬鹿野郎。",person:"作者不詳",theme:["勇気","努力"]},
+{text:"失敗は終わりではない。それは始まりだ。",person:"ウィンストン・チャーチル",theme:["勇気"]},
+{text:"前に進めない理由を探すな。前に進む理由を探せ。",person:"作者不詳",theme:["勇気"]},
+{text:"運命は勇者に微笑む。",person:"ウェルギリウス",theme:["勇気"]},
+{text:"成功の鍵は、恐怖を感じながらも行動することだ。",person:"スーザン・ジェファーズ",theme:["勇気"]},
+{text:"あなたが恐れていることの向こう側に、あなたが望んでいるすべてがある。",person:"ジャック・キャンフィールド",theme:["勇気"]},
+// --- 日本の偉人 ---
+{text:"吾輩は猫である。名前はまだ無い。",person:"夏目漱石",theme:["日本の偉人","人生"]},
+{text:"智に働けば角が立つ。情に棹させば流される。意地を通せば窮屈だ。とかくに人の世は住みにくい。",person:"夏目漱石",theme:["日本の偉人","人生"]},
+{text:"道がないなら自分で作ればいい。",person:"坂本龍馬",theme:["日本の偉人","勇気"]},
+{text:"世の人は我を何とも言わば言え。我が成すことは我のみぞ知る。",person:"坂本龍馬",theme:["日本の偉人","勇気"]},
+{text:"大事を成さんと欲する者は、まず小事を務むべし。",person:"二宮尊徳",theme:["日本の偉人","努力"]},
+{text:"学問のすすめは、天は人の上に人を造らず人の下に人を造らず。",person:"福沢諭吉",theme:["日本の偉人","人生"]},
+{text:"人生に失敗がないと、人生を失敗する。",person:"斎藤茂太",theme:["日本の偉人","人生"]},
+{text:"夢なき者に理想なし、理想なき者に計画なし。",person:"吉田松陰",theme:["日本の偉人","夢"]},
+{text:"百術は一誠にしかず。",person:"勝海舟",theme:["日本の偉人","人生"]},
+{text:"私は今、生きようとしている。そして、この生きようとする力こそ、愛と呼ぶべきものだ。",person:"岡本太郎",theme:["日本の偉人","人生"]},
+{text:"芸術は爆発だ。",person:"岡本太郎",theme:["日本の偉人"]},
+{text:"人間は城、人間は石垣、人間は堀。情けは味方、仇は敵なり。",person:"武田信玄",theme:["日本の偉人","仕事"]},
+{text:"負けていい戦はないが、退いていい戦はある。",person:"徳川家康",theme:["日本の偉人","勇気"]},
+{text:"人の一生は重荷を負うて遠き道を行くが如し。急ぐべからず。",person:"徳川家康",theme:["日本の偉人","人生"]},
+{text:"天下を動かすには、まず自分自身を動かせ。",person:"ソクラテス",theme:["日本の偉人","勇気"]},
+{text:"初心忘るべからず。",person:"世阿弥",theme:["日本の偉人","努力"]},
+{text:"散りぬべき時知りてこそ世の中の花は花なれ人は人なれ。",person:"細川ガラシャ",theme:["日本の偉人","人生"]},
+{text:"己を責めて、人を責めるな。",person:"徳川家康",theme:["日本の偉人","人生"]},
+{text:"五十にして四十九年の非を知る。",person:"淮南子",theme:["日本の偉人","人生"]},
+{text:"楽しまずして何の人生ぞや。",person:"吉川英治",theme:["日本の偉人","人生"]},
+{text:"世の中にたえて桜のなかりせば春の心はのどけからまし。",person:"在原業平",theme:["日本の偉人"]},
+{text:"敵は本能寺にあり。",person:"明智光秀",theme:["日本の偉人"]},
+{text:"春はあけぼの。",person:"清少納言",theme:["日本の偉人"]},
+{text:"花は盛りに、月は隈なきをのみ見るものかは。",person:"兼好法師",theme:["日本の偉人","人生"]},
+{text:"国破れて山河在り、城春にして草木深し。",person:"杜甫（松尾芭蕉引用）",theme:["日本の偉人"]},
+{text:"どうにかなる。それは、どうにかした人の言葉だ。",person:"作者不詳",theme:["日本の偉人","勇気"]},
+{text:"真剣にやれよ。仕事じゃねぇんだぞ。",person:"タモリ",theme:["日本の偉人","人生"]},
+{text:"反省はしろ。後悔はするな。",person:"イチロー",theme:["日本の偉人","スポーツ選手"]},
+{text:"人は何度やりそこなっても「もういっぺん」の勇気を失わなければ、必ずものになる。",person:"松下幸之助",theme:["日本の偉人","勇気","経営者"]},
+{text:"バカになれ。とことんバカになれ。",person:"アントニオ猪木",theme:["日本の偉人","勇気","スポーツ選手"]},
+// --- 経営者 ---
+{text:"失敗したところでやめてしまうから失敗になる。成功するまで続ければ成功になる。",person:"松下幸之助",theme:["経営者","努力","日本の偉人"]},
+{text:"現状維持は後退の始まりである。",person:"ウォルト・ディズニー",theme:["経営者","仕事"]},
+{text:"人は仕事で磨かれる。",person:"稲盛和夫",theme:["経営者","仕事","日本の偉人"]},
+{text:"数字は嘘をつかない。嘘つきが数字を使うのだ。",person:"マーク・トウェイン",theme:["経営者"]},
+{text:"成功とは、意欲を失わずに失敗に次ぐ失敗を繰り返すことである。",person:"ウィンストン・チャーチル",theme:["経営者","勇気"]},
+{text:"1%の可能性があるなら、それを100%信じろ。",person:"孫正義",theme:["経営者","勇気","日本の偉人"]},
+{text:"危機こそ最大のチャンスだ。",person:"松下幸之助",theme:["経営者","仕事","日本の偉人"]},
+{text:"シンプルに考えろ。すべての問題はシンプルにできる。",person:"柳井正",theme:["経営者","仕事","日本の偉人"]},
+{text:"世の中は変えられる。変えるのは自分だ。",person:"ビル・ゲイツ",theme:["経営者","勇気"]},
+{text:"社員が幸せでなければ、お客様を幸せにすることはできない。",person:"稲盛和夫",theme:["経営者","仕事","日本の偉人"]},
+{text:"スピードこそが経営の命だ。",person:"孫正義",theme:["経営者","仕事","日本の偉人"]},
+{text:"人の行く裏に道あり花の山。",person:"千利休",theme:["経営者","日本の偉人"]},
+{text:"経営とは、人を通じて事を成すことである。",person:"ピーター・ドラッカー",theme:["経営者","仕事"]},
+{text:"最大の危険は、目標が高すぎて達成できないことではない。目標が低すぎて達成してしまうことだ。",person:"ミケランジェロ",theme:["経営者","夢"]},
+{text:"勝てば官軍。しかし勝ち方にもこだわれ。",person:"豊田章男",theme:["経営者","日本の偉人"]},
+{text:"今日できることを明日に延ばすな。",person:"ベンジャミン・フランクリン",theme:["経営者","努力"]},
+{text:"信用は無形の財産である。",person:"松下幸之助",theme:["経営者","仕事","日本の偉人"]},
+{text:"他人と比べるな。昨日の自分と比べろ。",person:"ジョーダン・ピーターソン",theme:["経営者","努力"]},
+{text:"お金を追うな。夢を追え。お金は後からついてくる。",person:"本田宗一郎",theme:["経営者","夢","日本の偉人"]},
+{text:"変化は脅威ではない。変化はチャンスだ。",person:"ジャック・ウェルチ",theme:["経営者","仕事"]},
+{text:"お客様第一と言いながら、社員第一でなければ実現できない。",person:"サウスウエスト航空",theme:["経営者"]},
+{text:"最も強い者が生き残るのではない。最も賢い者が生き延びるのでもない。唯一、生き残れるのは変化できる者だ。",person:"チャールズ・ダーウィン",theme:["経営者","人生"]},
+{text:"文句を言う暇があったら、自分で動け。",person:"堀江貴文",theme:["経営者","勇気","日本の偉人"]},
+{text:"企業の目的は顧客の創造である。",person:"ピーター・ドラッカー",theme:["経営者","仕事"]},
+{text:"ゼロから何かを生み出すのが起業家だ。",person:"孫正義",theme:["経営者","日本の偉人"]},
+{text:"昨日の自分より今日の自分が少しでも成長していればそれでいい。",person:"藤田晋",theme:["経営者","努力","日本の偉人"]},
+{text:"利益の出ないビジネスは罪である。",person:"松下幸之助",theme:["経営者","日本の偉人"]},
+{text:"真のリーダーは、自ら率先垂範する。",person:"稲盛和夫",theme:["経営者","日本の偉人"]},
+{text:"成功に近道はない。成功への道は常に建設中である。",person:"リリー・トムリン",theme:["経営者","努力"]},
+{text:"自分だけが得をすることを考えるな。周りの人が得をすることを考えろ。",person:"渋沢栄一",theme:["経営者","日本の偉人"]},
+// --- スポーツ選手 ---
+{text:"僕を天才と呼ぶ人がいるが、僕は天才ではない。努力の人だ。",person:"大谷翔平",theme:["スポーツ選手","努力","日本の偉人"]},
+{text:"特別なことをするために特別なことをするのではない。特別なことをするために普段通りの当たり前のことをする。",person:"イチロー",theme:["スポーツ選手","努力","日本の偉人"]},
+{text:"僕にはサッカーの才能はないかもしれない。でもサッカーを愛する才能がある。",person:"本田圭佑",theme:["スポーツ選手","日本の偉人"]},
+{text:"苦しみを乗り越えたとき、それは必ず力になる。",person:"羽生結弦",theme:["スポーツ選手","勇気","日本の偉人"]},
+{text:"誰よりも三倍、四倍、五倍勉強する者、それが天才だ。",person:"野口英世",theme:["スポーツ選手","努力","日本の偉人"]},
+{text:"勝ちたいなら、まず自分に勝て。",person:"内村航平",theme:["スポーツ選手","日本の偉人"]},
+{text:"限界は自分の頭の中にしかない。",person:"ウサイン・ボルト",theme:["スポーツ選手","勇気"]},
+{text:"何度でも立ち上がれ。何度転んでも。",person:"三浦知良",theme:["スポーツ選手","勇気","日本の偉人"]},
+{text:"練習で100%出せない選手が本番で100%出せるわけがない。",person:"中田英寿",theme:["スポーツ選手","努力","日本の偉人"]},
+{text:"自分を信じて、自分の道を進め。",person:"錦織圭",theme:["スポーツ選手","勇気","日本の偉人"]},
+{text:"結果を出すためには、誰にも負けない努力が必要だ。",person:"ロナウド",theme:["スポーツ選手","努力"]},
+{text:"努力し続けることが才能だ。",person:"レブロン・ジェームズ",theme:["スポーツ選手","努力"]},
+{text:"チャンピオンとは、立ち上がれないときに立ち上がる人のことだ。",person:"ジャック・デンプシー",theme:["スポーツ選手","勇気"]},
+{text:"私はゴールを決めたシーンより、ミスをした翌日の練習を覚えている。",person:"中村俊輔",theme:["スポーツ選手","努力","日本の偉人"]},
+{text:"本番に強い人は、準備に手を抜かない人だ。",person:"長嶋茂雄",theme:["スポーツ選手","努力","日本の偉人"]},
+{text:"苦しいとき、辛いとき、自分を支えてくれるのは過去の自分の努力だ。",person:"浅田真央",theme:["スポーツ選手","努力","日本の偉人"]},
+{text:"今日の自分は昨日の自分を超える。ただそれだけだ。",person:"大谷翔平",theme:["スポーツ選手","努力","日本の偉人"]},
+{text:"勝つために最も大事なのは、負けた後にどう過ごすかだ。",person:"ジョコビッチ",theme:["スポーツ選手","勇気"]},
+{text:"プレッシャーを楽しめるようになれば一流だ。",person:"長谷部誠",theme:["スポーツ選手","勇気","日本の偉人"]},
+{text:"僕がずっと大事にしてきたことは、仲間への感謝だ。",person:"三浦知良",theme:["スポーツ選手","友情","日本の偉人"]},
+{text:"世界一になるには、世界一の練習をしなければならない。",person:"井上尚弥",theme:["スポーツ選手","努力","日本の偉人"]},
+{text:"楽しんだ者が勝つ。",person:"ネイマール",theme:["スポーツ選手"]},
+{text:"試合で失敗しても、次の日練習すればいい。人生も同じだ。",person:"松井秀喜",theme:["スポーツ選手","人生","日本の偉人"]},
+{text:"一番大切なのはメンタル。技術は後からついてくる。",person:"錦織圭",theme:["スポーツ選手","日本の偉人"]},
+{text:"やらずに後悔するより、やって失敗する方がいい。",person:"本田圭佑",theme:["スポーツ選手","勇気","日本の偉人"]},
+{text:"負けて悔しいと思える自分でよかった。",person:"高橋尚子",theme:["スポーツ選手","日本の偉人"]},
+{text:"すべてのトレーニングには意味がある。何一つ無駄なことはない。",person:"室伏広治",theme:["スポーツ選手","努力","日本の偉人"]},
+{text:"応援してくれる人がいるから走れる。",person:"大迫傑",theme:["スポーツ選手","友情","日本の偉人"]},
+{text:"最後の1秒まで諦めない。それがアスリートの魂だ。",person:"作者不詳",theme:["スポーツ選手","勇気"]},
+{text:"ピッチに立てば年齢は関係ない。プレーで証明するだけだ。",person:"三浦知良",theme:["スポーツ選手","勇気","日本の偉人"]}
+];
+
+const MEIGEN_TITLE_MAP = {
+  "人生": ["心に刺さる人生の名言10選","人生を変える名言10選","生き方が変わる名言10選","人生に迷った時に読む名言10選","読むだけで元気が出る人生の名言10選"],
+  "努力": ["努力の名言10選","頑張れる努力の名言10選","諦めそうな時に読む名言10選","努力は必ず報われる名言10選","もう一歩踏ん張れる名言10選"],
+  "恋愛": ["心に響く恋愛の名言10選","恋する人に届けたい名言10選","恋愛で悩んだ時に読む名言10選","泣ける恋の名言10選","大切な人に贈る名言10選"],
+  "仕事": ["仕事のモチベが上がる名言10選","働く人に届けたい名言10選","月曜日に読みたい仕事の名言10選","仕事で悩んだ時の名言10選","プロの名言10選"],
+  "夢": ["夢を叶える名言10選","夢を追う人に贈る名言10選","夢を諦めかけた時に読む名言10選","挑戦する勇気をくれる名言10選","夢に向かって走れる名言10選"],
+  "友情": ["友情の名言10選","親友に贈りたい名言10選","仲間がいるから頑張れる名言10選","友達の大切さに気づく名言10選","泣ける友情の名言10選"],
+  "勇気": ["勇気が出る名言10選","一歩踏み出す勇気をくれる名言10選","弱い自分を奮い立たせる名言10選","挫折した時に読む名言10選","背中を押してくれる名言10選"],
+  "日本の偉人": ["日本の偉人の名言10選","偉人たちの心に刺さる名言10選","歴史に残る日本の名言10選","知っておきたい偉人の名言10選","日本人なら知りたい名言10選"],
+  "経営者": ["成功する経営者の名言10選","経営者のマインドが学べる名言10選","ビジネスで成功する名言10選","リーダーの名言10選","経営の神様たちの名言10選"],
+  "スポーツ選手": ["アスリートの名言10選","スポーツ選手の心に刺さる名言10選","勝負師たちの名言10選","トップアスリートの名言10選","スポーツ魂を感じる名言10選"]
+};
+
+const MEIGEN_THEME_ICONS = {
+  "人生":"🌅","努力":"💪","恋愛":"💕","仕事":"💼","夢":"✨","友情":"🤝","勇気":"🔥","日本の偉人":"🇯🇵","経営者":"📈","スポーツ選手":"⚽"
+};
+
+const MEIGEN_HASHTAGS_MAP = {
+  "人生":"#名言 #名言集 #人生 #心に刺さる #生き方 #モチベーション #格言 #言葉 #名言好きな人と繋がりたい #fyp",
+  "努力":"#名言 #名言集 #努力 #頑張る #モチベーション #諦めない #格言 #努力の名言 #名言好きな人と繋がりたい #fyp",
+  "恋愛":"#名言 #名言集 #恋愛 #恋愛名言 #片思い #大切な人 #格言 #恋 #名言好きな人と繋がりたい #fyp",
+  "仕事":"#名言 #名言集 #仕事 #ビジネス #モチベーション #働く #格言 #仕事の名言 #名言好きな人と繋がりたい #fyp",
+  "夢":"#名言 #名言集 #夢 #挑戦 #モチベーション #目標 #格言 #夢を叶える #名言好きな人と繋がりたい #fyp",
+  "友情":"#名言 #名言集 #友情 #友達 #仲間 #親友 #格言 #絆 #名言好きな人と繋がりたい #fyp",
+  "勇気":"#名言 #名言集 #勇気 #一歩踏み出す #モチベーション #挫折 #格言 #強さ #名言好きな人と繋がりたい #fyp",
+  "日本の偉人":"#名言 #名言集 #偉人 #日本の偉人 #歴史 #日本史 #格言 #偉人の名言 #名言好きな人と繋がりたい #fyp",
+  "経営者":"#名言 #名言集 #経営者 #ビジネス #成功 #リーダー #格言 #起業 #名言好きな人と繋がりたい #fyp",
+  "スポーツ選手":"#名言 #名言集 #スポーツ #アスリート #勝負 #挑戦 #格言 #スポーツ選手 #名言好きな人と繋がりたい #fyp"
+};
+
+function generateMeigenSet(count) {
+  const theme = document.getElementById('meigen-theme').value;
+  const account = document.getElementById('meigen-account').value || '@meigen_daily';
+  const output = document.getElementById('meigen-output');
+
+  for (let s = 0; s < count; s++) {
+    const quotes = getMeigenQuotes(theme, 10);
+    const titles = MEIGEN_TITLE_MAP[theme];
+    const title = titles[Math.floor(Math.random() * titles.length)];
+    const icon = MEIGEN_THEME_ICONS[theme];
+    const hashtags = MEIGEN_HASHTAGS_MAP[theme];
+
+    const setId = 'mset-' + Date.now() + '-' + s;
+
+    let slidesHTML = '';
+
+    // Slide 1: Title
+    slidesHTML += `<div class="meigen-slide" style="background:linear-gradient(135deg,#1a1028,#2d1b4e)">
+      <div class="meigen-slide-num">1/12</div>
+      <div class="meigen-slide-icon">${icon}</div>
+      <div class="meigen-slide-title-text">${escapeHtml(title)}</div>
+      <div class="meigen-slide-sub">保存してあとで読み返そう</div>
+    </div>`;
+
+    // Slides 2-11: Quotes
+    for (let i = 0; i < 10; i++) {
+      const q = quotes[i];
+      slidesHTML += `<div class="meigen-slide">
+        <div class="meigen-slide-num">${i+2}/12</div>
+        <div class="meigen-slide-quote">\u300C${escapeHtml(q.text)}\u300D</div>
+        <div class="meigen-slide-person">\u2015 ${escapeHtml(q.person)}</div>
+        <div style="position:absolute;bottom:10px;right:12px;font-size:.65rem;color:rgba(255,255,255,.35)">${i+1}/10</div>
+      </div>`;
+    }
+
+    // Slide 12: CTA
+    slidesHTML += `<div class="meigen-slide" style="background:linear-gradient(135deg,#1a1028,#2d1b4e)">
+      <div class="meigen-slide-num">12/12</div>
+      <div class="meigen-slide-icon">\u2764\uFE0F</div>
+      <div class="meigen-slide-cta">\u6700\u5F8C\u307E\u3067\u898B\u3066\u304F\u308C\u3066<br>\u3042\u308A\u304C\u3068\u3046\uFF01</div>
+      <div class="meigen-slide-sub">\u3044\u3044\u306D\uFF06\u30D5\u30A9\u30ED\u30FC\u304A\u9858\u3044\u3057\u307E\u3059</div>
+      <div class="meigen-slide-account">${escapeHtml(account)}</div>
+    </div>`;
+
+    // Build Canva prompt
+    let canvaPrompt = `\u3010\u30B9\u30E9\u30A4\u30C91\uFF08\u8868\u7D19\uFF09\u3011\n\u80CC\u666F: \u30C0\u30FC\u30AF\u30B0\u30E9\u30C7\u30FC\u30B7\u30E7\u30F3\n\u30C6\u30AD\u30B9\u30C8(\u5927): ${title}\n\u30C6\u30AD\u30B9\u30C8(\u5C0F): \u4FDD\u5B58\u3057\u3066\u3042\u3068\u3067\u8AAD\u307F\u8FD4\u305D\u3046\n\u30D5\u30A9\u30F3\u30C8: \u660E\u671D\u4F53\u3001\u767D\u3001\u4E2D\u592E\u63C3\u3048\n`;
+
+    for (let i = 0; i < 10; i++) {
+      const q = quotes[i];
+      canvaPrompt += `\n\u3010\u30B9\u30E9\u30A4\u30C9${i+2}\uFF08${i+1}/10\uFF09\u3011\n\u80CC\u666F: \u30C0\u30FC\u30AF\u30B0\u30E9\u30C7\u30FC\u30B7\u30E7\u30F3\n\u30C6\u30AD\u30B9\u30C8(\u5927): \u300C${q.text}\u300D\n\u30C6\u30AD\u30B9\u30C8(\u5C0F): \u2015 ${q.person}\n\u756A\u53F7: ${i+1}/10\uFF08\u53F3\u4E0B\uFF09\n\u30D5\u30A9\u30F3\u30C8: \u660E\u671D\u4F53\u3001\u767D\u3001\u4E2D\u592E\u63C3\u3048\n`;
+    }
+
+    canvaPrompt += `\n\u3010\u30B9\u30E9\u30A4\u30C912\uFF08\u30A8\u30F3\u30C9\uFF09\u3011\n\u80CC\u666F: \u30C0\u30FC\u30AF\u30B0\u30E9\u30C7\u30FC\u30B7\u30E7\u30F3\n\u30C6\u30AD\u30B9\u30C8(\u5927): \u6700\u5F8C\u307E\u3067\u898B\u3066\u304F\u308C\u3066\u3042\u308A\u304C\u3068\u3046\uFF01\n\u30C6\u30AD\u30B9\u30C8(\u4E2D): \u3044\u3044\u306D\uFF06\u30D5\u30A9\u30ED\u30FC\u304A\u9858\u3044\u3057\u307E\u3059\n\u30C6\u30AD\u30B9\u30C8(\u5C0F): ${account}\n\u30A2\u30A4\u30B3\u30F3: \u30CF\u30FC\u30C8\u30DE\u30FC\u30AF\n`;
+
+    // TikTok caption
+    const tiktokCaption = `${title}\n\n\u4FDD\u5B58\u3057\u3066\u4F55\u5EA6\u3082\u8AAD\u307F\u8FD4\u3057\u3066\u306D\uFF01\n\n${hashtags}`;
+
+    const canvaId = 'canva-' + setId;
+    const captionId = 'caption-' + setId;
+
+    const setHTML = `
+    <div class="meigen-set" id="${setId}">
+      <div class="meigen-set-header">
+        <div class="meigen-set-title">${icon} ${escapeHtml(title)}</div>
+        <span style="font-size:.75rem;color:var(--text3)">Set ${s+1}</span>
+      </div>
+      <div class="meigen-slides-grid">${slidesHTML}</div>
+
+      <div class="meigen-prompt-block">
+        <div class="meigen-prompt-label">Canva/\u753B\u50CF\u751F\u6210\u30C4\u30FC\u30EB\u7528\u30D7\u30ED\u30F3\u30D7\u30C8</div>
+        <button class="btn btn-sm btn-primary meigen-copy-btn" onclick="copyText(document.getElementById('${canvaId}').textContent)">\u30B3\u30D4\u30FC</button>
+        <div class="meigen-prompt-text" id="${canvaId}">${escapeHtml(canvaPrompt)}</div>
+      </div>
+
+      <div class="meigen-prompt-block">
+        <div class="meigen-prompt-label">TikTok\u6295\u7A3F\u6587</div>
+        <button class="btn btn-sm btn-primary meigen-copy-btn" onclick="copyText(document.getElementById('${captionId}').textContent)">\u30B3\u30D4\u30FC</button>
+        <div class="meigen-prompt-text" id="${captionId}">${escapeHtml(tiktokCaption)}</div>
+      </div>
+    </div>`;
+
+    output.insertAdjacentHTML('beforeend', setHTML);
+  }
+  showToast(`${count}\u30BB\u30C3\u30C8\u306E\u30B9\u30E9\u30A4\u30C9\u3092\u751F\u6210\u3057\u307E\u3057\u305F\uFF01`);
+}
+
+function getMeigenQuotes(theme, count) {
+  const pool = MEIGEN_QUOTES.filter(q => q.theme.includes(theme));
+  const result = [];
+  const used = new Set();
+  for (let i = 0; i < count && i < pool.length; i++) {
+    let idx;
+    let attempts = 0;
+    do {
+      idx = Math.floor(Math.random() * pool.length);
+      attempts++;
+    } while (used.has(idx) && attempts < 50);
+    used.add(idx);
+    result.push(pool[idx]);
+  }
+  return result;
+}
+
 // Init
 document.getElementById('stat-templates').textContent = TEMPLATES.length;
 renderCalendar();
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
