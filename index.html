@@ -136,10 +136,44 @@ body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--bg);colo
 .meigen-prompt-label{font-size:.8rem;font-weight:600;color:var(--accent2);margin-bottom:8px}
 .meigen-prompt-text{font-size:.8rem;color:var(--text2);line-height:1.8;white-space:pre-wrap;max-height:300px;overflow-y:auto;font-family:monospace}
 .meigen-copy-btn{position:absolute;top:10px;right:10px}
+
+/* PNG Download */
+.meigen-dl-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.meigen-dl-bar .btn{font-size:.85rem}
+.meigen-progress{font-size:.8rem;color:var(--accent2);font-weight:600;margin-left:8px;display:none}
+.meigen-individual-dl{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.meigen-individual-dl .btn{font-size:.75rem;padding:4px 10px}
+
+/* Hidden render container for 1080x1920 slides */
+.meigen-render-container{position:absolute;left:-99999px;top:0;pointer-events:none;overflow:hidden}
+.meigen-render-slide{width:1080px;height:1920px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;font-family:'Shippori Mincho','Yu Mincho','Hiragino Mincho Pro',serif}
+.meigen-render-slide *{font-family:inherit}
+.mrs-border{position:absolute;inset:40px;border:1px solid rgba(255,255,255,.12);border-radius:8px;pointer-events:none}
+.mrs-sparkle{position:absolute;color:rgba(255,255,255,.08);font-size:24px;pointer-events:none}
+.mrs-sparkle.s1{top:60px;left:60px}.mrs-sparkle.s2{top:60px;right:60px}.mrs-sparkle.s3{bottom:60px;left:60px}.mrs-sparkle.s4{bottom:60px;right:60px}
+.mrs-sparkle.s5{top:50%;left:50px}.mrs-sparkle.s6{top:50%;right:50px}
+.mrs-num{position:absolute;top:56px;right:56px;width:72px;height:72px;border-radius:50%;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:22px;color:rgba(255,255,255,.7);font-weight:600;border:1px solid rgba(255,255,255,.15)}
+.mrs-quote-open{position:absolute;top:280px;left:80px;font-size:200px;color:rgba(255,255,255,.04);line-height:1;font-family:serif}
+.mrs-quote-close{position:absolute;bottom:280px;right:80px;font-size:200px;color:rgba(255,255,255,.04);line-height:1;font-family:serif}
+.mrs-quote-text{font-size:58px;font-weight:500;color:#fff;line-height:1.8;padding:0 100px;max-width:960px;text-shadow:0 2px 16px rgba(0,0,0,.4);letter-spacing:2px}
+.mrs-person{font-size:34px;color:#c9a96e;margin-top:48px;letter-spacing:4px;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+.mrs-icon{font-size:140px;margin-bottom:40px;filter:drop-shadow(0 4px 16px rgba(0,0,0,.3))}
+.mrs-title{font-size:64px;font-weight:700;color:#fff;line-height:1.6;text-shadow:0 3px 16px rgba(0,0,0,.4);padding:0 80px;letter-spacing:3px}
+.mrs-subtitle{font-size:32px;color:rgba(255,255,255,.6);margin-top:32px;letter-spacing:6px}
+.mrs-cta{font-size:56px;font-weight:700;color:#fff;line-height:1.7;text-shadow:0 3px 16px rgba(0,0,0,.4);letter-spacing:2px}
+.mrs-account{font-size:36px;color:#c9a96e;margin-top:24px;letter-spacing:3px}
+.mrs-bottom-num{position:absolute;bottom:56px;right:72px;font-size:26px;color:rgba(255,255,255,.4)}
+
 @media(max-width:600px){
   .meigen-slides-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
 
@@ -1005,10 +1039,35 @@ const MEIGEN_HASHTAGS_MAP = {
   "スポーツ選手":"#名言 #名言集 #スポーツ #アスリート #勝負 #挑戦 #格言 #スポーツ選手 #名言好きな人と繋がりたい #fyp"
 };
 
+const MEIGEN_GRADIENTS = {
+  "人生":"linear-gradient(135deg,#2d1059,#1a0a3e,#0f0730)",
+  "努力":"linear-gradient(135deg,#0a1628,#0d2137,#0a2f3f)",
+  "恋愛":"linear-gradient(135deg,#3d0a2e,#2a0838,#1a0530)",
+  "仕事":"linear-gradient(135deg,#0a0f1e,#111827,#1e293b)",
+  "夢":"linear-gradient(135deg,#1a0a40,#2d1b69,#1a0a40)",
+  "友情":"linear-gradient(135deg,#0a1e28,#0d2844,#0a1628)",
+  "勇気":"linear-gradient(135deg,#2a0a0a,#3d1515,#1a0808)",
+  "日本の偉人":"linear-gradient(135deg,#1a1028,#0f0f2a,#0a0a1e)",
+  "経営者":"linear-gradient(135deg,#0a1a0a,#152815,#0a1a0a)",
+  "スポーツ選手":"linear-gradient(135deg,#0a0a1e,#15153d,#0a0a1e)"
+};
+
+function buildRenderSlide(bg, numText, contentHTML) {
+  return `<div class="meigen-render-slide" style="background:${bg}">
+    <div class="mrs-border"></div>
+    <div class="mrs-sparkle s1">\u2726</div><div class="mrs-sparkle s2">\u2726</div>
+    <div class="mrs-sparkle s3">\u2726</div><div class="mrs-sparkle s4">\u2726</div>
+    <div class="mrs-sparkle s5">\u2727</div><div class="mrs-sparkle s6">\u2727</div>
+    <div class="mrs-num">${numText}</div>
+    ${contentHTML}
+  </div>`;
+}
+
 function generateMeigenSet(count) {
   const theme = document.getElementById('meigen-theme').value;
   const account = document.getElementById('meigen-account').value || '@meigen_daily';
   const output = document.getElementById('meigen-output');
+  const gradient = MEIGEN_GRADIENTS[theme] || MEIGEN_GRADIENTS["\u4eba\u751f"];
 
   for (let s = 0; s < count; s++) {
     const quotes = getMeigenQuotes(theme, 10);
@@ -1020,50 +1079,70 @@ function generateMeigenSet(count) {
     const setId = 'mset-' + Date.now() + '-' + s;
 
     let slidesHTML = '';
+    let renderHTML = '';
 
-    // Slide 1: Title
-    slidesHTML += `<div class="meigen-slide" style="background:linear-gradient(135deg,#1a1028,#2d1b4e)">
+    // Slide 1: Title (preview)
+    slidesHTML += `<div class="meigen-slide" style="background:${gradient}">
       <div class="meigen-slide-num">1/12</div>
       <div class="meigen-slide-icon">${icon}</div>
       <div class="meigen-slide-title-text">${escapeHtml(title)}</div>
-      <div class="meigen-slide-sub">保存してあとで読み返そう</div>
+      <div class="meigen-slide-sub">\u4fdd\u5b58\u3057\u3066\u3042\u3068\u3067\u8aad\u307f\u8fd4\u305d\u3046</div>
     </div>`;
+    // Slide 1: Title (render 1080x1920)
+    renderHTML += buildRenderSlide(gradient, '1/12',
+      `<div class="mrs-icon">${icon}</div>
+       <div class="mrs-title">${escapeHtml(title)}</div>
+       <div class="mrs-subtitle">\u4fdd\u5b58\u3057\u3066\u3042\u3068\u3067\u8aad\u307f\u8fd4\u305d\u3046</div>`);
 
     // Slides 2-11: Quotes
     for (let i = 0; i < 10; i++) {
       const q = quotes[i];
-      slidesHTML += `<div class="meigen-slide">
+      slidesHTML += `<div class="meigen-slide" style="background:${gradient}">
         <div class="meigen-slide-num">${i+2}/12</div>
-        <div class="meigen-slide-quote">\u300C${escapeHtml(q.text)}\u300D</div>
+        <div class="meigen-slide-quote">\u300c${escapeHtml(q.text)}\u300d</div>
         <div class="meigen-slide-person">\u2015 ${escapeHtml(q.person)}</div>
         <div style="position:absolute;bottom:10px;right:12px;font-size:.65rem;color:rgba(255,255,255,.35)">${i+1}/10</div>
       </div>`;
+      renderHTML += buildRenderSlide(gradient, `${i+2}/12`,
+        `<div class="mrs-quote-open">\u300c</div>
+         <div class="mrs-quote-close">\u300d</div>
+         <div class="mrs-quote-text">${escapeHtml(q.text)}</div>
+         <div class="mrs-person">\u2015 ${escapeHtml(q.person)}</div>
+         <div class="mrs-bottom-num">${i+1}/10</div>`);
     }
 
-    // Slide 12: CTA
-    slidesHTML += `<div class="meigen-slide" style="background:linear-gradient(135deg,#1a1028,#2d1b4e)">
+    // Slide 12: CTA (preview)
+    slidesHTML += `<div class="meigen-slide" style="background:${gradient}">
       <div class="meigen-slide-num">12/12</div>
-      <div class="meigen-slide-icon">\u2764\uFE0F</div>
-      <div class="meigen-slide-cta">\u6700\u5F8C\u307E\u3067\u898B\u3066\u304F\u308C\u3066<br>\u3042\u308A\u304C\u3068\u3046\uFF01</div>
-      <div class="meigen-slide-sub">\u3044\u3044\u306D\uFF06\u30D5\u30A9\u30ED\u30FC\u304A\u9858\u3044\u3057\u307E\u3059</div>
+      <div class="meigen-slide-icon">\u2764\ufe0f</div>
+      <div class="meigen-slide-cta">\u6700\u5f8c\u307e\u3067\u898b\u3066\u304f\u308c\u3066<br>\u3042\u308a\u304c\u3068\u3046\uff01</div>
+      <div class="meigen-slide-sub">\u3044\u3044\u306d\uff06\u30d5\u30a9\u30ed\u30fc\u304a\u9858\u3044\u3057\u307e\u3059</div>
       <div class="meigen-slide-account">${escapeHtml(account)}</div>
     </div>`;
+    // Slide 12: CTA (render)
+    renderHTML += buildRenderSlide(gradient, '12/12',
+      `<div class="mrs-icon">\u2764\ufe0f</div>
+       <div class="mrs-cta">\u6700\u5f8c\u307e\u3067\u898b\u3066\u304f\u308c\u3066<br>\u3042\u308a\u304c\u3068\u3046\uff01</div>
+       <div class="mrs-subtitle">\u3044\u3044\u306d\uff06\u30d5\u30a9\u30ed\u30fc\u304a\u9858\u3044\u3057\u307e\u3059</div>
+       <div class="mrs-account">${escapeHtml(account)}</div>`);
 
     // Build Canva prompt
-    let canvaPrompt = `\u3010\u30B9\u30E9\u30A4\u30C91\uFF08\u8868\u7D19\uFF09\u3011\n\u80CC\u666F: \u30C0\u30FC\u30AF\u30B0\u30E9\u30C7\u30FC\u30B7\u30E7\u30F3\n\u30C6\u30AD\u30B9\u30C8(\u5927): ${title}\n\u30C6\u30AD\u30B9\u30C8(\u5C0F): \u4FDD\u5B58\u3057\u3066\u3042\u3068\u3067\u8AAD\u307F\u8FD4\u305D\u3046\n\u30D5\u30A9\u30F3\u30C8: \u660E\u671D\u4F53\u3001\u767D\u3001\u4E2D\u592E\u63C3\u3048\n`;
+    let canvaPrompt = `\u3010\u30b9\u30e9\u30a4\u30c91\uff08\u8868\u7d19\uff09\u3011\n\u80cc\u666f: \u30c0\u30fc\u30af\u30b0\u30e9\u30c7\u30fc\u30b7\u30e7\u30f3\n\u30c6\u30ad\u30b9\u30c8(\u5927): ${title}\n\u30c6\u30ad\u30b9\u30c8(\u5c0f): \u4fdd\u5b58\u3057\u3066\u3042\u3068\u3067\u8aad\u307f\u8fd4\u305d\u3046\n\u30d5\u30a9\u30f3\u30c8: \u660e\u671d\u4f53\u3001\u767d\u3001\u4e2d\u592e\u63c3\u3048\n`;
 
     for (let i = 0; i < 10; i++) {
       const q = quotes[i];
-      canvaPrompt += `\n\u3010\u30B9\u30E9\u30A4\u30C9${i+2}\uFF08${i+1}/10\uFF09\u3011\n\u80CC\u666F: \u30C0\u30FC\u30AF\u30B0\u30E9\u30C7\u30FC\u30B7\u30E7\u30F3\n\u30C6\u30AD\u30B9\u30C8(\u5927): \u300C${q.text}\u300D\n\u30C6\u30AD\u30B9\u30C8(\u5C0F): \u2015 ${q.person}\n\u756A\u53F7: ${i+1}/10\uFF08\u53F3\u4E0B\uFF09\n\u30D5\u30A9\u30F3\u30C8: \u660E\u671D\u4F53\u3001\u767D\u3001\u4E2D\u592E\u63C3\u3048\n`;
+      canvaPrompt += `\n\u3010\u30b9\u30e9\u30a4\u30c9${i+2}\uff08${i+1}/10\uff09\u3011\n\u80cc\u666f: \u30c0\u30fc\u30af\u30b0\u30e9\u30c7\u30fc\u30b7\u30e7\u30f3\n\u30c6\u30ad\u30b9\u30c8(\u5927): \u300c${q.text}\u300d\n\u30c6\u30ad\u30b9\u30c8(\u5c0f): \u2015 ${q.person}\n\u756a\u53f7: ${i+1}/10\uff08\u53f3\u4e0b\uff09\n\u30d5\u30a9\u30f3\u30c8: \u660e\u671d\u4f53\u3001\u767d\u3001\u4e2d\u592e\u63c3\u3048\n`;
     }
 
-    canvaPrompt += `\n\u3010\u30B9\u30E9\u30A4\u30C912\uFF08\u30A8\u30F3\u30C9\uFF09\u3011\n\u80CC\u666F: \u30C0\u30FC\u30AF\u30B0\u30E9\u30C7\u30FC\u30B7\u30E7\u30F3\n\u30C6\u30AD\u30B9\u30C8(\u5927): \u6700\u5F8C\u307E\u3067\u898B\u3066\u304F\u308C\u3066\u3042\u308A\u304C\u3068\u3046\uFF01\n\u30C6\u30AD\u30B9\u30C8(\u4E2D): \u3044\u3044\u306D\uFF06\u30D5\u30A9\u30ED\u30FC\u304A\u9858\u3044\u3057\u307E\u3059\n\u30C6\u30AD\u30B9\u30C8(\u5C0F): ${account}\n\u30A2\u30A4\u30B3\u30F3: \u30CF\u30FC\u30C8\u30DE\u30FC\u30AF\n`;
+    canvaPrompt += `\n\u3010\u30b9\u30e9\u30a4\u30c912\uff08\u30a8\u30f3\u30c9\uff09\u3011\n\u80cc\u666f: \u30c0\u30fc\u30af\u30b0\u30e9\u30c7\u30fc\u30b7\u30e7\u30f3\n\u30c6\u30ad\u30b9\u30c8(\u5927): \u6700\u5f8c\u307e\u3067\u898b\u3066\u304f\u308c\u3066\u3042\u308a\u304c\u3068\u3046\uff01\n\u30c6\u30ad\u30b9\u30c8(\u4e2d): \u3044\u3044\u306d\uff06\u30d5\u30a9\u30ed\u30fc\u304a\u9858\u3044\u3057\u307e\u3059\n\u30c6\u30ad\u30b9\u30c8(\u5c0f): ${account}\n\u30a2\u30a4\u30b3\u30f3: \u30cf\u30fc\u30c8\u30de\u30fc\u30af\n`;
 
     // TikTok caption
-    const tiktokCaption = `${title}\n\n\u4FDD\u5B58\u3057\u3066\u4F55\u5EA6\u3082\u8AAD\u307F\u8FD4\u3057\u3066\u306D\uFF01\n\n${hashtags}`;
+    const tiktokCaption = `${title}\n\n\u4fdd\u5b58\u3057\u3066\u4f55\u5ea6\u3082\u8aad\u307f\u8fd4\u3057\u3066\u306d\uff01\n\n${hashtags}`;
 
     const canvaId = 'canva-' + setId;
     const captionId = 'caption-' + setId;
+    const renderId = 'render-' + setId;
+    const progressId = 'progress-' + setId;
 
     const setHTML = `
     <div class="meigen-set" id="${setId}">
@@ -1073,22 +1152,94 @@ function generateMeigenSet(count) {
       </div>
       <div class="meigen-slides-grid">${slidesHTML}</div>
 
+      <div class="meigen-dl-bar">
+        <button class="btn btn-primary" onclick="downloadMeigenZip('${renderId}','${progressId}','${escapeHtml(theme)}')">
+          \ud83d\uddbc\ufe0f \u753b\u50cf\u3092\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\uff08ZIP\uff09
+        </button>
+        <button class="btn btn-secondary" onclick="toggleIndividualDl('${setId}')">
+          1\u679a\u305a\u3064\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9
+        </button>
+        <span class="meigen-progress" id="${progressId}"></span>
+      </div>
+      <div class="meigen-individual-dl" id="indiv-${setId}" style="display:none"></div>
+
+      <div class="meigen-render-container" id="${renderId}">${renderHTML}</div>
+
       <div class="meigen-prompt-block">
-        <div class="meigen-prompt-label">Canva/\u753B\u50CF\u751F\u6210\u30C4\u30FC\u30EB\u7528\u30D7\u30ED\u30F3\u30D7\u30C8</div>
-        <button class="btn btn-sm btn-primary meigen-copy-btn" onclick="copyText(document.getElementById('${canvaId}').textContent)">\u30B3\u30D4\u30FC</button>
+        <div class="meigen-prompt-label">Canva/\u753b\u50cf\u751f\u6210\u30c4\u30fc\u30eb\u7528\u30d7\u30ed\u30f3\u30d7\u30c8</div>
+        <button class="btn btn-sm btn-primary meigen-copy-btn" onclick="copyText(document.getElementById('${canvaId}').textContent)">\u30b3\u30d4\u30fc</button>
         <div class="meigen-prompt-text" id="${canvaId}">${escapeHtml(canvaPrompt)}</div>
       </div>
 
       <div class="meigen-prompt-block">
-        <div class="meigen-prompt-label">TikTok\u6295\u7A3F\u6587</div>
-        <button class="btn btn-sm btn-primary meigen-copy-btn" onclick="copyText(document.getElementById('${captionId}').textContent)">\u30B3\u30D4\u30FC</button>
+        <div class="meigen-prompt-label">TikTok\u6295\u7a3f\u6587</div>
+        <button class="btn btn-sm btn-primary meigen-copy-btn" onclick="copyText(document.getElementById('${captionId}').textContent)">\u30b3\u30d4\u30fc</button>
         <div class="meigen-prompt-text" id="${captionId}">${escapeHtml(tiktokCaption)}</div>
       </div>
     </div>`;
 
     output.insertAdjacentHTML('beforeend', setHTML);
+
+    // Build individual download buttons
+    const indivContainer = document.getElementById('indiv-' + setId);
+    const slideNames = ['title'];
+    for (let i = 1; i <= 10; i++) slideNames.push('quote' + i);
+    slideNames.push('cta');
+    for (let i = 0; i < 12; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-sm btn-secondary';
+      btn.textContent = `${i+1}\u679a\u76ee`;
+      btn.onclick = (function(ri, si, sn) {
+        return function() { downloadSingleSlide(ri, si, sn); };
+      })(renderId, i, slideNames[i]);
+      indivContainer.appendChild(btn);
+    }
   }
-  showToast(`${count}\u30BB\u30C3\u30C8\u306E\u30B9\u30E9\u30A4\u30C9\u3092\u751F\u6210\u3057\u307E\u3057\u305F\uFF01`);
+  showToast(`${count}\u30bb\u30c3\u30c8\u306e\u30b9\u30e9\u30a4\u30c9\u3092\u751f\u6210\u3057\u307e\u3057\u305f\uff01`);
+}
+
+function toggleIndividualDl(setId) {
+  const el = document.getElementById('indiv-' + setId);
+  el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+}
+
+async function renderSlideToBlob(slideEl) {
+  const canvas = await html2canvas(slideEl, {
+    width: 1080, height: 1920, scale: 1,
+    useCORS: true, backgroundColor: null,
+    logging: false
+  });
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+}
+
+async function downloadMeigenZip(renderId, progressId, theme) {
+  const container = document.getElementById(renderId);
+  const slides = container.querySelectorAll('.meigen-render-slide');
+  const progressEl = document.getElementById(progressId);
+  progressEl.style.display = 'inline';
+  const zip = new JSZip();
+  const names = ['01_title'];
+  for (let i = 1; i <= 10; i++) names.push(String(i+1).padStart(2,'0') + '_quote' + i);
+  names.push('12_cta');
+
+  for (let i = 0; i < slides.length; i++) {
+    progressEl.textContent = `\u753b\u50cf\u751f\u6210\u4e2d... ${i+1}/${slides.length}`;
+    const blob = await renderSlideToBlob(slides[i]);
+    zip.file(`slide_${names[i]}.png`, blob);
+  }
+  progressEl.textContent = 'ZIP\u4f5c\u6210\u4e2d...';
+  const zipBlob = await zip.generateAsync({type:'blob'});
+  saveAs(zipBlob, `meigen_${theme}_slides.zip`);
+  progressEl.textContent = '\u2705 \u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u5b8c\u4e86\uff01';
+  setTimeout(() => { progressEl.style.display = 'none'; }, 3000);
+}
+
+async function downloadSingleSlide(renderId, index, name) {
+  const container = document.getElementById(renderId);
+  const slide = container.querySelectorAll('.meigen-render-slide')[index];
+  if (!slide) return;
+  const blob = await renderSlideToBlob(slide);
+  saveAs(blob, `slide_${String(index+1).padStart(2,'0')}_${name}.png`);
 }
 
 function getMeigenQuotes(theme, count) {
@@ -1112,9 +1263,6 @@ function getMeigenQuotes(theme, count) {
 document.getElementById('stat-templates').textContent = TEMPLATES.length;
 renderCalendar();
 </script>
-
-</body>
-</html>
 
 </body>
 </html>
