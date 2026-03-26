@@ -120,14 +120,14 @@ body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--bg);colo
 /* TikTok Meigen Slides */
 .meigen-set{background:var(--surface);border:1px solid rgba(124,92,252,.1);border-radius:var(--radius);padding:24px;margin-bottom:24px}
 .meigen-set-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.meigen-set-title{font-size:1.1rem;font-weight:700;color:var(--accent2)}
+.meigen-set-title{font-size:1.1rem;font-weight:700;color:var(--accent2);word-break:keep-all;overflow-wrap:anywhere}
 .meigen-slides-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 .meigen-slide{aspect-ratio:9/16;background:linear-gradient(135deg,#1a1028,#0f0f13);border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;text-align:center;position:relative;border:1px solid rgba(124,92,252,.15);overflow:hidden;transition:transform .2s}
 .meigen-slide:hover{transform:scale(1.02)}
 .meigen-slide-num{position:absolute;top:8px;right:10px;font-size:.65rem;color:rgba(255,255,255,.5);background:rgba(0,0,0,.4);padding:2px 8px;border-radius:10px}
-.meigen-slide-quote{font-size:.82rem;font-weight:500;color:#fff;line-height:1.7;margin-bottom:10px;font-family:'Yu Mincho','Hiragino Mincho Pro',serif}
-.meigen-slide-person{font-size:.7rem;color:rgba(255,255,255,.6)}
-.meigen-slide-title-text{font-size:1rem;font-weight:700;color:#fff;line-height:1.6;font-family:'Yu Mincho','Hiragino Mincho Pro',serif}
+.meigen-slide-quote{font-size:.82rem;font-weight:500;color:#fff;line-height:1.7;margin-bottom:10px;font-family:'Yu Mincho','Hiragino Mincho Pro',serif;word-break:keep-all;overflow-wrap:anywhere}
+.meigen-slide-person{font-size:.7rem;color:rgba(255,255,255,.6);white-space:nowrap}
+.meigen-slide-title-text{font-size:1rem;font-weight:700;color:#fff;line-height:1.6;font-family:'Yu Mincho','Hiragino Mincho Pro',serif;word-break:keep-all;overflow-wrap:anywhere}
 .meigen-slide-sub{font-size:.7rem;color:rgba(255,255,255,.5);margin-top:8px}
 .meigen-slide-icon{font-size:2rem;margin-bottom:10px}
 .meigen-slide-cta{font-size:.85rem;font-weight:600;color:#fff;line-height:1.6}
@@ -166,6 +166,10 @@ body{font-family:'Segoe UI','Hiragino Sans',sans-serif;background:var(--bg);colo
 
 @media(max-width:600px){
   .meigen-slides-grid{grid-template-columns:repeat(2,1fr)}
+  .meigen-slide-quote{font-size:.72rem;line-height:1.6;padding:0 2px}
+  .meigen-slide-person{font-size:.6rem}
+  .meigen-slide-title-text{font-size:.85rem}
+  .meigen-slide{padding:12px}
 }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
