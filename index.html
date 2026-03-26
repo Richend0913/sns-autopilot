@@ -1060,6 +1060,42 @@ const MEIGEN_GRADIENTS = {
   "スポーツ選手":"linear-gradient(135deg,#0a0a1e,#15153d,#0a0a1e)"
 };
 
+// 日本語テキストを意味のある位置で改行する
+function smartBreak(text, maxChars) {
+  if (text.length <= maxChars) return escapeHtml(text);
+  // 助詞・句読点・記号の直後で改行
+  const breakAfter = /([をにはがでとのもへや、。！？」』）])/g;
+  let result = '';
+  let lineLen = 0;
+  for (let i = 0; i < text.length; i++) {
+    result += escapeHtml(text[i]);
+    lineLen++;
+    if (lineLen >= maxChars && breakAfter.test(text[i]) && i < text.length - 1) {
+      result += '<br>';
+      lineLen = 0;
+    }
+  }
+  return result;
+}
+
+// タイトル用：中央付近で自然に2行に分割
+function smartTitleBreak(text) {
+  if (text.length <= 8) return escapeHtml(text);
+  const mid = Math.floor(text.length / 2);
+  const breakPoints = /[をにはがでとのもへや、。る]/;
+  // 中央付近で助詞を探す
+  let bestPos = -1;
+  for (let d = 0; d <= mid; d++) {
+    if (mid + d < text.length && breakPoints.test(text[mid + d])) { bestPos = mid + d + 1; break; }
+    if (mid - d >= 0 && breakPoints.test(text[mid - d])) { bestPos = mid - d + 1; break; }
+  }
+  if (bestPos > 0 && bestPos < text.length) {
+    return escapeHtml(text.slice(0, bestPos)) + '<br>' + escapeHtml(text.slice(bestPos));
+  }
+  // フォールバック：中央で切る
+  return escapeHtml(text.slice(0, mid)) + '<br>' + escapeHtml(text.slice(mid));
+}
+
 function buildRenderSlide(bg, numText, contentHTML) {
   return `<div class="meigen-render-slide" style="background:${bg}">
     <div class="mrs-border"></div>
@@ -1093,7 +1129,7 @@ function generateMeigenSet(count) {
     slidesHTML += `<div class="meigen-slide" style="background:${gradient}">
       <div class="meigen-slide-num">1/12</div>
       <div class="meigen-slide-icon">${icon}</div>
-      <div class="meigen-slide-title-text">${escapeHtml(title)}</div>
+      <div class="meigen-slide-title-text">${smartTitleBreak(title)}</div>
       <div class="meigen-slide-sub">\u4fdd\u5b58\u3057\u3066\u3042\u3068\u3067\u8aad\u307f\u8fd4\u305d\u3046</div>
     </div>`;
     // Slide 1: Title (render 1080x1920)
@@ -1107,7 +1143,7 @@ function generateMeigenSet(count) {
       const q = quotes[i];
       slidesHTML += `<div class="meigen-slide" style="background:${gradient}">
         <div class="meigen-slide-num">${i+2}/12</div>
-        <div class="meigen-slide-quote">\u300c${escapeHtml(q.text)}\u300d</div>
+        <div class="meigen-slide-quote">\u300c${smartBreak(q.text, 12)}\u300d</div>
         <div class="meigen-slide-person">\u2015 ${escapeHtml(q.person)}</div>
         <div style="position:absolute;bottom:10px;right:12px;font-size:.65rem;color:rgba(255,255,255,.35)">${i+1}/10</div>
       </div>`;
@@ -1155,7 +1191,7 @@ function generateMeigenSet(count) {
     const setHTML = `
     <div class="meigen-set" id="${setId}">
       <div class="meigen-set-header">
-        <div class="meigen-set-title">${icon} ${escapeHtml(title)}</div>
+        <div class="meigen-set-title">${icon} ${smartTitleBreak(title)}</div>
         <span style="font-size:.75rem;color:var(--text3)">Set ${s+1}</span>
       </div>
       <div class="meigen-slides-grid">${slidesHTML}</div>
